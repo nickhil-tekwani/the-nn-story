@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Make these usable as Tailwind color utilities, e.g. text-cream/70, bg-gold. */
+@theme {
+  --color-ink: #1c1917;
+  --color-cream: #faf7f2;
+  --color-gold: #b08d57;
+}
+
+:root {
+  --ink: #1c1917;
+  --cream: #faf7f2;
+  --gold: #b08d57;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  color: var(--cream);
+  background: #0c0a09;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-script {
+  font-family: "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive;
+}
+
+/* Fallback gradient that sits behind the video so the page never looks broken
+   while the video loads (or if the URL is missing). */
+.video-fallback {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(176, 141, 87, 0.35), transparent 60%),
+    linear-gradient(160deg, #1a1410 0%, #0c0a09 60%, #14110d 100%);
+}
