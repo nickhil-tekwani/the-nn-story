@@ -14,6 +14,9 @@ export default async function AdminPage() {
           Sign in with an authorized account.
         </p>
         <SignInButton />
+        <Link href="/" className="font-sans text-sm text-stone-400 underline underline-offset-4 hover:text-stone-200 transition-colors">
+          Return home
+        </Link>
       </main>
     );
   }
