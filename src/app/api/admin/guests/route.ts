@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db, guests, rsvps } from "@/db";
 import { isAdminEmail } from "@/lib/admin";
-import { normalizePhone, isValidUsPhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 
 async function requireAdmin() {
   const session = await auth();
@@ -63,13 +63,14 @@ export async function POST(req: Request) {
       errors.push(`Line ${lineNo}: missing name.`);
       return;
     }
-    if (!isValidUsPhone(rawPhone)) {
+    const phone = normalizePhone(rawPhone);
+    if (!phone) {
       errors.push(`Line ${lineNo} (${name}): invalid phone "${rawPhone}".`);
       return;
     }
     valid.push({
       name,
-      phone: normalizePhone(rawPhone),
+      phone,
       maxPartySize: Number.isInteger(max) && max > 0 ? max : 1,
     });
   });

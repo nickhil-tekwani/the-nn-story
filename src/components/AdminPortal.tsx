@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/AuthButtons";
+import { formatPhone } from "@/lib/phone";
 
 type GuestRow = {
   id: number;
@@ -83,14 +84,16 @@ export default function AdminPortal() {
           <p className="mb-4 text-sm text-stone-400">
             Paste CSV rows: <code>name, phone, max_party_size</code>. A header
             row is optional. Existing guests (matched by phone) are updated;
-            claims are preserved.
+            claims are preserved. Phones are normalized automatically — a bare
+            10-digit number is treated as US (+1); prefix India numbers with{" "}
+            <code>+91</code> (e.g. <code>+91 98765 43210</code>).
           </p>
           <form onSubmit={upload}>
             <textarea
               value={csv}
               onChange={(e) => setCsv(e.target.value)}
               rows={6}
-              placeholder={"Jane & John Smith, (513) 555-0142, 4\nAlex Doe, 513-555-0199, 2"}
+              placeholder={"Jane & John Smith, (513) 555-0142, 4\nAlex Doe, 513-555-0199, 2\nPriya Sharma, +91 98765 43210, 2"}
               className="w-full rounded-lg border border-stone-600 bg-stone-900 p-3 font-mono text-sm text-stone-100 focus:border-stone-400 focus:outline-none"
             />
             <div className="mt-3 flex items-center gap-4">
@@ -164,11 +167,4 @@ export default function AdminPortal() {
       </div>
     </main>
   );
-}
-
-function formatPhone(p: string): string {
-  if (p.length === 10) {
-    return `(${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}`;
-  }
-  return p;
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db, guests } from "@/db";
-import { normalizePhone, isValidUsPhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
 
 /**
  * Claim an invite by phone number. Binds the signed-in Google account to a
@@ -27,13 +27,13 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   const rawPhone: string = body?.phone ?? "";
-  if (!isValidUsPhone(rawPhone)) {
+  const phone = normalizePhone(rawPhone);
+  if (!phone) {
     return NextResponse.json(
-      { error: "Please enter a valid 10-digit US phone number." },
+      { error: "Please enter a valid US (+1) or India (+91) phone number." },
       { status: 400 },
     );
   }
-  const phone = normalizePhone(rawPhone);
 
   // Only claim a row that matches the phone AND is still unclaimed. Doing the
   // claimed-check inside the UPDATE avoids a race between two simultaneous logins.
