@@ -13,9 +13,11 @@
  */
 
 const portraitSrc =
-  process.env.NEXT_PUBLIC_BG_PORTRAIT_URL || "/bg-portrait.jpg";
+  process.env.NEXT_PUBLIC_BG_PORTRAIT_URL ||
+  "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/TRR_4056.JPG";
 const landscapeSrc =
-  process.env.NEXT_PUBLIC_BG_LANDSCAPE_URL || "/bg-landscape.jpg";
+  process.env.NEXT_PUBLIC_BG_LANDSCAPE_URL ||
+  "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/TRR_8822.JPG";
 
 export default function VideoBackground() {
   return (
