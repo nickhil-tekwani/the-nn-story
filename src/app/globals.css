@@ -20,6 +20,13 @@ body {
   min-height: 100%;
 }
 
+a,
+button,
+select,
+[role="button"] {
+  cursor: pointer;
+}
+
 body {
   font-family: ui-serif, Georgia, "Times New Roman", serif;
   color: var(--cream);
