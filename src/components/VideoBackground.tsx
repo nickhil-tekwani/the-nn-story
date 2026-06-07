@@ -1,26 +1,43 @@
 /**
- * Full-screen looping background video. The URL comes from NEXT_PUBLIC_VIDEO_URL
- * (defaults to the bundled placeholder in /public). A gradient sits behind it so
- * the page looks intentional even before the video loads.
+ * Full-screen background photo. Two images are loaded:
+ *  - bg-portrait  (9:16) — shown on portrait/mobile viewports
+ *  - bg-landscape (16:9) — shown on landscape/desktop viewports
+ *
+ * Swap the placeholder files in /public with your real photos whenever ready:
+ *   /public/bg-portrait.jpg   (vertical, e.g. 1080×1920)
+ *   /public/bg-landscape.jpg  (horizontal, e.g. 1920×1080)
+ *
+ * Or override via env vars:
+ *   NEXT_PUBLIC_BG_PORTRAIT_URL
+ *   NEXT_PUBLIC_BG_LANDSCAPE_URL
  */
-export default function VideoBackground() {
-  const src = process.env.NEXT_PUBLIC_VIDEO_URL || "/placeholder-loop.mp4";
 
+const portraitSrc =
+  process.env.NEXT_PUBLIC_BG_PORTRAIT_URL || "/bg-portrait.jpg";
+const landscapeSrc =
+  process.env.NEXT_PUBLIC_BG_LANDSCAPE_URL || "/bg-landscape.jpg";
+
+export default function VideoBackground() {
   return (
-    <div className="fixed inset-0 -z-10 video-fallback">
-      <video
-        className="h-full w-full object-cover opacity-60"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        // poster could be added here for an instant first paint
-      >
-        <source src={src} type="video/mp4" />
-      </video>
-      {/* Dark overlay for text legibility */}
-      <div className="absolute inset-0 bg-black/40" />
+    <div className="fixed inset-0 -z-10 bg-fallback">
+      {/* Portrait image — visible on narrow/phone screens */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={portraitSrc}
+        alt=""
+        aria-hidden="true"
+        className="portrait-bg absolute inset-0 h-full w-full object-cover"
+      />
+      {/* Landscape image — visible on wider/desktop screens */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={landscapeSrc}
+        alt=""
+        aria-hidden="true"
+        className="landscape-bg absolute inset-0 h-full w-full object-cover"
+      />
+      {/* Dark + blur overlay for text legibility */}
+      <div className="absolute inset-0 bg-overlay" />
     </div>
   );
 }

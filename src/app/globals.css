@@ -38,10 +38,34 @@ body {
   font-family: "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive;
 }
 
-/* Fallback gradient that sits behind the video so the page never looks broken
-   while the video loads (or if the URL is missing). */
-.video-fallback {
+/* Fallback gradient — shows while images load or if URLs are missing. */
+.bg-fallback {
   background:
     radial-gradient(1200px 600px at 50% -10%, rgba(176, 141, 87, 0.35), transparent 60%),
     linear-gradient(160deg, #1a1410 0%, #0c0a09 60%, #14110d 100%);
+}
+
+/*
+ * Responsive photo switching.
+ * Portrait image on narrow/phone, landscape on wider/desktop.
+ * The CSS media query matches the actual orientation of the viewport,
+ * so rotating your phone also switches the image.
+ */
+.portrait-bg  { display: block; }
+.landscape-bg { display: none;  }
+
+@media (orientation: landscape), (min-width: 768px) {
+  .portrait-bg  { display: none;  }
+  .landscape-bg { display: block; }
+}
+
+/*
+ * Overlay: a dark tint + backdrop blur applied on top of whichever photo is
+ * showing. Increase blur-px for more blur, decrease bg-black opacity for
+ * a lighter/darker overall feel.
+ */
+.bg-overlay {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.45);
 }
