@@ -62,8 +62,10 @@ const groups = [
 
 const beerSake = [
   { name: "Sapporo", desc: "Premium Japanese lager." },
-  { name: "Hokkaido Handshake", desc: "A shot of umeshu alongside a Sapporo." },
-  { name: "Ozeki Sake", desc: "The original single-cup sake, served in 6oz cups." },
+  { name: "Hokkaido Handshake", desc: "A Sapporo alongside a shot of umeshu. Umeshu is a Japanese plum liqueur — fruity, sweet-tart, and served cold. You can also order the umeshu as a standalone shot if you just want that." },
+  { name: "Ozeki Sake", desc: "The original single-cup sake. Served cold in 6oz pours." },
+  { name: "Kanbara Bride of the Fox", desc: "Junmai Ginjo. Slightly savory, dry, izakaya-style sake — great cold or hot. Ask for it warm if you want something cozy." },
+  { name: "Sho Chiku Bai Silky Mild Nigori", desc: "Nigori sake — unfiltered, creamy, sweet, super tasty. The cloudy one. Served in 4oz pours." },
   { name: "Toki Whiskey", desc: "Suntory Toki — neat, on the rocks, or as a highball." },
 ];
 
