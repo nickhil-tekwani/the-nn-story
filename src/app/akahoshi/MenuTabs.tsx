@@ -240,7 +240,7 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
 const TABS = ["Bowls", "Drinks"];
 
 export default function MenuTabs() {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(1);
   const [selectedName, setSelectedName] = useState("");
   const panelRefs = [
     useRef<HTMLDivElement>(null),
