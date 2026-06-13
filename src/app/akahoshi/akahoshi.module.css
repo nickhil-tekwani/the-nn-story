@@ -125,6 +125,47 @@
   border-color: #c1121f;
 }
 
+.guestDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fdfcf9;
+  border: 1px solid rgba(26, 22, 19, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(26, 22, 19, 0.1);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.guestDropdownItem {
+  background: none;
+  border: 0;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-pt), serif;
+  font-size: 1rem;
+  color: #1a1613;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.guestDropdownItem:hover {
+  background: rgba(193, 18, 31, 0.06);
+  color: #c1121f;
+}
+
+.guestDropdownEmpty {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: #8a847b;
+  font-style: italic;
+  margin: 0;
+}
+
 .guestSelectArrow {
   position: absolute;
   right: 0.85rem;

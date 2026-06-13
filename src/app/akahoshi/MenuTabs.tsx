@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styles from "./akahoshi.module.css";
 
 /* ---- Food data ---- */
@@ -268,6 +268,25 @@ const TABS = ["Bowls", "Drinks"];
 export default function MenuTabs() {
   const [active, setActive] = useState(1);
   const [selectedName, setSelectedName] = useState("");
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const comboRef = useRef<HTMLDivElement>(null);
+
+  const filteredGuests = guests.filter((g) =>
+    g.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (comboRef.current && !comboRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch(selectedName);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [selectedName]);
+
   const panelRefs = [
     useRef<HTMLDivElement>(null),
     useRef<HTMLDivElement>(null),
@@ -299,24 +318,46 @@ export default function MenuTabs() {
     <div>
       {/* Guest picker */}
       <div className={styles.guestSection}>
-        <label className={styles.guestLabel} htmlFor="guest-select">
+        <label className={styles.guestLabel} htmlFor="guest-search">
           Who are you?
         </label>
-        <div className={styles.guestSelectWrap}>
-          <select
-            id="guest-select"
+        <div className={styles.guestSelectWrap} ref={comboRef}>
+          <input
+            id="guest-search"
+            type="text"
+            autoComplete="off"
             className={styles.guestSelect}
-            value={selectedName}
-            onChange={(e) => setSelectedName(e.target.value)}
-          >
-            <option value="">Pick your name →</option>
-            {guests.map((g) => (
-              <option key={g.name} value={g.name}>
-                {g.name}
-              </option>
-            ))}
-          </select>
+            placeholder="Search your name →"
+            value={open ? search : selectedName}
+            onFocus={() => {
+              setOpen(true);
+              setSearch("");
+            }}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <span className={styles.guestSelectArrow} aria-hidden>▾</span>
+          {open && (
+            <div className={styles.guestDropdown}>
+              {filteredGuests.length > 0 ? (
+                filteredGuests.map((g) => (
+                  <button
+                    key={g.name}
+                    className={styles.guestDropdownItem}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSelectedName(g.name);
+                      setSearch(g.name);
+                      setOpen(false);
+                    }}
+                  >
+                    {g.name}
+                  </button>
+                ))
+              ) : (
+                <p className={styles.guestDropdownEmpty}>No match</p>
+              )}
+            </div>
+          )}
         </div>
         {selectedGuest && <PersonalizedCard guest={selectedGuest} />}
       </div>
