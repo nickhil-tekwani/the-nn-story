@@ -42,7 +42,7 @@ const groups = [
     num: 2,
     name: "No Pork",
     diet: "Chicken + fish OK; skip the pork",
-    options: ["Midwest Shoyu (remove pork)", "Soupless Tantanmen (remove pork)", "Hiyashi Tantanmen"],
+    options: ["Midwest Shoyu (remove pork)", "Soupless Tantanmen (remove pork)", "Hiyashi Tantanmen (remove pork)"],
   },
   {
     num: 3,
