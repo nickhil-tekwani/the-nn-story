@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./akahoshi.module.css";
 
 /* ---- Food data ---- */
@@ -81,14 +82,14 @@ const featuredCocktails = [
 ];
 
 const highballVariants = [
-  { name: "Toki", base: "whiskey" },
-  { name: "Yuzu", base: "yuzu liqueur" },
-  { name: "Sakura", base: "vodka" },
+  { name: "Toki", base: "whiskey", detail: "More details coming soon." },
+  { name: "Yuzu", base: "yuzu liqueur", detail: "More details coming soon." },
+  { name: "Sakura", base: "vodka", detail: "More details coming soon." },
 ];
 
 const naDrinks = [
   { name: "Sapporo N/A", desc: "Non-alcoholic Japanese lager." },
-  { name: "Ramune", desc: "The original Japanese marble soda.", flavors: ["Original", "Melon", "Grape", "Lychee"] },
+  { name: "Ramune", desc: "The original Japanese marble soda. Flavors: Original, Melon, Grape, or Lychee." },
   { name: "Coke · Diet Coke · Sprite", desc: "The classics, ice cold." },
 ];
 
@@ -263,6 +264,7 @@ const TABS = ["Bowls", "Drinks"];
 export default function MenuTabs() {
   const [active, setActive] = useState(1);
   const [selectedName, setSelectedName] = useState("");
+  const [openHighball, setOpenHighball] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const comboRef = useRef<HTMLDivElement>(null);
@@ -310,7 +312,7 @@ export default function MenuTabs() {
   }, [selectedGuest]);
 
   return (
-    <div>
+    <>
       {/* Guest picker */}
       <div className={styles.guestSection}>
         <label className={styles.guestLabel} htmlFor="guest-search">
@@ -462,9 +464,13 @@ export default function MenuTabs() {
             </p>
             <div className={styles.pillRow}>
               {highballVariants.map((v) => (
-                <span key={v.name} className={styles.pill}>
+                <button
+                  key={v.name}
+                  className={styles.pillBtn}
+                  onClick={() => setOpenHighball(v.name)}
+                >
                   {v.name} <em>{v.base}</em>
-                </span>
+                </button>
               ))}
             </div>
 
@@ -474,18 +480,26 @@ export default function MenuTabs() {
               <div key={d.name} className={styles.bowl}>
                 <p className={styles.bowlName}>{d.name}</p>
                 <p className={styles.bowlDesc}>{d.desc}</p>
-                {d.flavors && (
-                  <div className={styles.pillRow} style={{ marginTop: "0.6rem", justifyContent: "flex-start" }}>
-                    {d.flavors.map((f) => (
-                      <span key={f} className={styles.pill}>{f}</span>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    {openHighball && typeof document !== "undefined" && createPortal(
+      (() => {
+        const v = highballVariants.find(h => h.name === openHighball)!;
+        return (
+          <div className={styles.modalOverlay} onClick={() => setOpenHighball(null)}>
+            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+              <p className={styles.modalTitle}>{v.name} <em>{v.base}</em></p>
+              <p className={styles.modalBody}>{v.detail}</p>
+              <button className={styles.modalClose} onClick={() => setOpenHighball(null)}>✕</button>
+            </div>
+          </div>
+        );
+      })(),
+      document.body
+    )}
+    </>
   );
 }
