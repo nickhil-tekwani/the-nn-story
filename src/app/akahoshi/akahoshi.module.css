@@ -441,6 +441,29 @@
   margin-right: 0.5rem;
 }
 
+.groupList {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.groupListItem {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.groupListItem::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: #c1121f;
+}
+
 .tip {
   font-size: 0.86rem;
   color: #6b645c;

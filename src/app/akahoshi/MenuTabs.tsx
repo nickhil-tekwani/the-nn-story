@@ -36,25 +36,19 @@ const groups = [
     num: 1,
     name: "Fully Vegetarian",
     diet: "No pork, chicken, or fish",
-    best: "Veggie-Kotsu, as-is — broth and toppings are already vegetarian.",
-    alt: "Soupless Tantanmen, hold the pork — noodles only, no broth.",
-    tip: "Add an egg to either for the full experience.",
+    options: ["Veggie-Kotsu", "Soupless Tantanmen (veg)", "Hiyashi Tantanmen (limited, veg)"],
   },
   {
     num: 2,
     name: "No Pork",
     diet: "Chicken + fish OK; skip the pork",
-    best: "Midwest Shoyu — remove the pork topping, keep the chicken.",
-    alt: "Soupless Tantanmen, hold the pork — noodles only, no broth.",
-    tip: "Extra egg or Mala/Gekikara spice powder on request.",
+    options: ["Midwest Shoyu (remove pork)", "Soupless Tantanmen (remove pork)", "Hiyashi Tantanmen (limited)"],
   },
   {
     num: 3,
     name: "Eat Everything",
     diet: "Pork, chicken, fish — the works",
-    best: "Akahoshi Miso — broth and toppings both bring the pork. The full experience.",
-    alt: "Midwest Shoyu for a lighter broth, or Soupless Tantanmen.",
-    tip: "Add an egg or Mala/Gekikara spice powder and go all in.",
+    options: ["Akahoshi Miso", "Midwest Shoyu", "Soupless Tantanmen", "Hiyashi Tantanmen (limited)", "Veggie-Kotsu"],
   },
 ];
 
@@ -407,15 +401,11 @@ export default function MenuTabs() {
                   <span className={styles.groupName}>{g.name}</span>
                 </div>
                 <p className={styles.groupDiet}>{g.diet}</p>
-                <p className={styles.rec}>
-                  <span className={styles.recLabel}>Order</span>
-                  {g.best}
-                </p>
-                <p className={styles.rec}>
-                  <span className={styles.recLabel}>Or</span>
-                  {g.alt}
-                </p>
-                <p className={styles.tip}>{g.tip}</p>
+                <ul className={styles.groupList}>
+                  {g.options.map((opt) => (
+                    <li key={opt} className={styles.groupListItem}>{opt}</li>
+                  ))}
+                </ul>
               </div>
             ))}
             <p className={styles.footerNote}>
