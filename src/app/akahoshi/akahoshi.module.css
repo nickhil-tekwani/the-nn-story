@@ -74,25 +74,162 @@
 
 /* ---------- Sections ---------- */
 
-.section {
-  margin-top: clamp(2.6rem, 7vw, 3.6rem);
-}
-
-.sectionTitle {
-  font-family: var(--font-gilda), serif;
-  font-weight: 400;
-  font-size: 1.5rem;
-  text-align: center;
-  margin: 0 0 0.4rem;
-  letter-spacing: 0.02em;
-}
-
 .sectionRule {
   width: 2.2rem;
   height: 1px;
   background: #c1121f;
   border: 0;
   margin: 0 auto 1.8rem;
+}
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  margin-bottom: 2rem;
+}
+
+.tab,
+.tabActive {
+  background: none;
+  border: 0;
+  padding: 0.3rem 0;
+  font-family: var(--font-gilda), serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  color: #b9b2a8;
+  position: relative;
+  transition: color 0.25s ease;
+}
+
+.tabActive {
+  color: #1a1613;
+}
+
+.tabActive::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.35rem;
+  width: 1.8rem;
+  height: 1px;
+  background: #c1121f;
+  transform: translateX(-50%);
+}
+
+.tab:hover {
+  color: #6b645c;
+}
+
+/* ---------- Sliding panels ---------- */
+
+.viewport {
+  position: relative;
+  overflow: hidden;
+  transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.track {
+  display: flex;
+  width: 200%;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panel {
+  width: 50%;
+  flex: 0 0 50%;
+  align-self: flex-start;
+}
+
+/* In-panel section heading (the tab bar serves as the top-level title). */
+.subTitle {
+  font-family: var(--font-gilda), serif;
+  font-weight: 400;
+  font-size: 1.4rem;
+  text-align: center;
+  margin: 2.6rem 0 0.4rem;
+  letter-spacing: 0.02em;
+}
+.panel > .subTitle:first-child {
+  margin-top: 0.3rem;
+}
+
+/* ---------- Featured His / Hers cocktails ---------- */
+
+.featured {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.4rem;
+}
+
+.featuredCard {
+  border: 1px solid rgba(193, 18, 31, 0.25);
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem;
+  text-align: center;
+  flex: 1;
+}
+
+.who {
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c1121f;
+  margin: 0 0 0.5rem;
+}
+
+.featuredName {
+  font-family: var(--font-gilda), serif;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+
+.featuredDesc {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #6b645c;
+  margin: 0;
+}
+
+@media (min-width: 520px) {
+  .featured {
+    flex-direction: row;
+  }
+}
+
+/* ---------- Highball pills ---------- */
+
+.highballNote {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b645c;
+  margin: 0 0 1.1rem;
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.pill {
+  border: 1px solid rgba(26, 22, 19, 0.18);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.pill em {
+  font-style: italic;
+  color: #8a847b;
+  font-size: 0.82rem;
+  margin-left: 0.2rem;
 }
 
 /* ---------- The bowls ---------- */
