@@ -68,6 +68,7 @@ const beer = [
 
 const sake = [
   { name: "Ozeki Sake (Cold)", desc: "The house sake — reliable and approachable, served cold in 6oz pours. Think of it as the \"house lager\" of the sake list." },
+  { name: "Dassai Blue 50", desc: "Easiest premium sake to appreciate. Fruity, floral, clean, approachable — the bottle most likely to convert wine and cocktail drinkers." },
   { name: "Kanbara Bride of the Fox (Hot)", desc: "The standout bottle. A Junmai Ginjo that drinks more like a good white wine than what most people picture as sake — honeydew, pistachio, grilled nuts, white chocolate, and a dry, savory finish with lots of umami. Especially good with the richer bowls." },
   { name: "Sho Chiku Bai Silky Mild Nigori (Cold)", desc: "The crowd-pleaser. Creamy, fruity, sweet, and almost dessert-like — the cloudy unfiltered one. If you like Moscato, boba milk tea, or sweeter cocktails, you'll love this. Served in 4oz pours." },
 ];
