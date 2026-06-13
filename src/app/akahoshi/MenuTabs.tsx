@@ -62,7 +62,7 @@ const groups = [
 
 const beer = [
   { name: "Sapporo", desc: "Premium Japanese lager." },
-  { name: "Hokkaido Handshake", desc: "A Sapporo alongside a shot of umeshu. Umeshu is a Japanese plum liqueur — fruity, sweet-tart, and served cold. You can also order the umeshu as a standalone shot if you just want that." },
+  { name: "Hokkaido Handshake", desc: "A Sapporo alongside a shot of umeshu. Umeshu is a Japanese plum liqueur — fruity, sweet-tart, and served cold.", bold: "You can also order the umeshu as a standalone shot if you just want that." },
   { name: "Toki Whiskey", desc: "Suntory Toki — neat, on the rocks, or as a highball." },
 ];
 
@@ -394,7 +394,7 @@ export default function MenuTabs() {
             {beer.map((d) => (
               <div key={d.name} className={styles.bowl}>
                 <p className={styles.bowlName}>{d.name}</p>
-                <p className={styles.bowlDesc}>{d.desc}</p>
+                <p className={styles.bowlDesc}>{d.desc}{d.bold && <> <strong>{d.bold}</strong></>}</p>
               </div>
             ))}
 
