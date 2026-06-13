@@ -407,6 +407,65 @@
   margin: 0.7rem 0 0;
 }
 
+/* ---------- Instagram ---------- */
+
+.igSection {
+  text-align: center;
+  margin-top: clamp(2rem, 6vw, 3rem);
+}
+
+.igLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #6b645c;
+  margin: 0 0 1rem;
+}
+
+.igRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.igBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(26, 22, 19, 0.18);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-pt), serif;
+  font-size: 0.92rem;
+  color: #1a1613;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.igBtn:hover {
+  border-color: #c1121f;
+  color: #c1121f;
+  background: rgba(193, 18, 31, 0.04);
+}
+
+.igIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.igSub {
+  font-size: 0.78rem;
+  color: #8a847b;
+  margin-left: 0.15rem;
+}
+
+.igBtn:hover .igSub {
+  color: rgba(193, 18, 31, 0.65);
+}
+
 /* ---------- Footer ---------- */
 
 .footer {

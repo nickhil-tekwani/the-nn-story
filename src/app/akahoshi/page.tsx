@@ -54,6 +54,38 @@ export default function AkahoshiMenu() {
 
         <MenuTabs />
 
+        <div className={styles.igSection}>
+          <p className={styles.igLabel}>Follow on Instagram</p>
+          <div className={styles.igRow}>
+            <a
+              href="https://www.instagram.com/akahoshiramen/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.igBtn}
+            >
+              <svg className={styles.igIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4.5"/>
+                <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+              </svg>
+              @akahoshiramen
+            </a>
+            <a
+              href="https://www.instagram.com/ramen__lord/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.igBtn}
+            >
+              <svg className={styles.igIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4.5"/>
+                <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+              </svg>
+              @ramen__lord <span className={styles.igSub}>Mike · RamenLord</span>
+            </a>
+          </div>
+        </div>
+
         <footer className={styles.footer}>
           <p className={styles.signoff}>
             Thank you for celebrating with us{" "}
