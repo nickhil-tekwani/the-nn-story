@@ -93,7 +93,7 @@ const highballVariants = [
 
 const naDrinks = [
   { name: "Sapporo N/A", desc: "Non-alcoholic Japanese lager." },
-  { name: "Ramune", desc: "The original Japanese marble soda. Flavors: Original, Melon, Grape, or Lychee." },
+  { name: "Ramune", desc: "The original Japanese marble soda.", flavors: ["Original", "Melon", "Grape", "Lychee"] },
   { name: "Coke · Diet Coke · Sprite", desc: "The classics, ice cold." },
 ];
 
@@ -441,6 +441,13 @@ export default function MenuTabs() {
               <div key={d.name} className={styles.bowl}>
                 <p className={styles.bowlName}>{d.name}</p>
                 <p className={styles.bowlDesc}>{d.desc}</p>
+                {d.flavors && (
+                  <div className={styles.pillRow} style={{ marginTop: "0.6rem" }}>
+                    {d.flavors.map((f) => (
+                      <span key={f} className={styles.pill}>{f}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
