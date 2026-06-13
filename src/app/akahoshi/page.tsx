@@ -50,6 +50,14 @@ export default function AkahoshiMenu() {
             We&apos;re so glad you&apos;re here. Here&apos;s a little guide to
             the perfect bowl — and the right drink to go with it.
           </p>
+          <a href="/gallery" className={styles.galleryLink}>
+            <svg className={styles.galleryIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            View Gallery
+          </a>
         </header>
 
         <MenuTabs />

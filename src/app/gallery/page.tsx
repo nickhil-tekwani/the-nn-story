@@ -54,7 +54,7 @@ export default function Gallery() {
             Nickhil <span className={styles.star}>★</span> Nikki
           </p>
           <h1 className={styles.title}>Gallery</h1>
-          <p className={styles.intro}>A few of our favorite moments together.</p>
+          <p className={styles.intro}>a few clicks from this week</p>
         </header>
 
         <GalleryGrid photos={photos} />
