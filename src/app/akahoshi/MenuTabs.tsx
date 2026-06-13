@@ -22,7 +22,7 @@ const bowls = [
   {
     name: "Hiyashi Tantanmen",
     desc: "A cold riff on the soupless tantanmen — tart and bracing. Sesame, black vinegar, chili oil, chilled thick noodles, cucumber, cilantro, bok choi, crumbled cashews.",
-    tag: "Limited · Cold",
+    tag: "Cold",
   },
   {
     name: "Veggie-Kotsu",
@@ -36,19 +36,19 @@ const groups = [
     num: 1,
     name: "Fully Vegetarian",
     diet: "No pork, chicken, or fish",
-    options: ["Veggie-Kotsu", "Soupless Tantanmen (veg)", "Hiyashi Tantanmen (limited, veg)"],
+    options: ["Veggie-Kotsu", "Soupless Tantanmen (veg)", "Hiyashi Tantanmen (ask for veg)"],
   },
   {
     num: 2,
     name: "No Pork",
     diet: "Chicken + fish OK; skip the pork",
-    options: ["Midwest Shoyu (remove pork)", "Soupless Tantanmen (remove pork)", "Hiyashi Tantanmen (limited)"],
+    options: ["Midwest Shoyu (remove pork)", "Soupless Tantanmen (remove pork)", "Hiyashi Tantanmen"],
   },
   {
     num: 3,
     name: "Eat Everything",
     diet: "Pork, chicken, fish — the works",
-    options: ["Akahoshi Miso", "Midwest Shoyu", "Soupless Tantanmen", "Hiyashi Tantanmen (limited)", "Veggie-Kotsu"],
+    options: ["Akahoshi Miso", "Midwest Shoyu", "Soupless Tantanmen", "Hiyashi Tantanmen", "Veggie-Kotsu"],
   },
 ];
 
@@ -159,7 +159,7 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
         </p>
         <p className={styles.rec}>
           <span className={styles.recLabel}>Also</span>
-          <strong>Hiyashi Tantanmen</strong> (limited) — cold sesame
+          <strong>Hiyashi Tantanmen</strong> — cold sesame
           noodles with black vinegar and chili oil. A great pick if you want
           something refreshing instead of hot.
         </p>
@@ -229,7 +229,7 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
       {!guest.sesameFree && (
         <p className={styles.rec}>
           <span className={styles.recLabel}>Also</span>
-          <strong>Hiyashi Tantanmen</strong> (limited) — ask for the
+          <strong>Hiyashi Tantanmen</strong> — ask for the
           vegetarian version. Cold sesame noodles, black vinegar, chili oil,
           cucumber. A cold option if you don&apos;t want something hot.
         </p>
