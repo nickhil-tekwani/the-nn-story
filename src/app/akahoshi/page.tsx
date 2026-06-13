@@ -15,10 +15,23 @@ const ptSerif = PT_Serif({
   variable: "--font-pt",
 });
 
+const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/TRR_8822.JPG";
+
 export const metadata: Metadata = {
   title: "Akahoshi · Nickhil ♥ Nikki",
   description:
     "A little guide to ordering the perfect bowl at our engagement celebration.",
+  openGraph: {
+    title: "Akahoshi · Nickhil ♥ Nikki",
+    description: "A little guide to ordering the perfect bowl at our engagement celebration.",
+    images: [{ url: OG_IMAGE, width: 1200, alt: "Nickhil & Nikki" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Akahoshi · Nickhil ♥ Nikki",
+    images: [OG_IMAGE],
+  },
 };
 
 export default function AkahoshiMenu() {
