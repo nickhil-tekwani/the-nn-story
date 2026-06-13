@@ -82,9 +82,9 @@ const featuredCocktails = [
 ];
 
 const highballVariants = [
-  { name: "Toki", base: "whiskey", detail: "More details coming soon." },
-  { name: "Yuzu", base: "yuzu liqueur", detail: "More details coming soon." },
-  { name: "Sakura", base: "vodka", detail: "More details coming soon." },
+  { name: "Toki", base: "whiskey", detail: "An izakaya classic, on tap. Suntory Toki Whiskey, supercharged highball soda. Clean, crisp, and endlessly drinkable — the easy order if you're having more than one." },
+  { name: "Yuzu", base: "yuzu liqueur", detail: "Yuzu liqueur, shochu, supercharged highball soda. Bright and tart with a Japanese citrus edge — lighter and more refreshing than the Toki." },
+  { name: "Sakura", base: "vodka", detail: "Sakura infused Haku Vodka, lemon, simple syrup, supercharged highball soda. Floral and delicate with a soft sweetness — the most unique pour of the three." },
 ];
 
 const naDrinks = [
