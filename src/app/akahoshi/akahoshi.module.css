@@ -407,6 +407,7 @@
   font-family: var(--font-gilda), serif;
   font-size: 1.25rem;
   margin: 0 0 0.9rem;
+  color: #1a1613;
 }
 
 .modalTitle em {
