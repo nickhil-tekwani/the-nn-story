@@ -15,7 +15,7 @@ const ptSerif = PT_Serif({
   variable: "--font-pt",
 });
 
-const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/TRR_8822.JPG";
+const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/nikkinickhill-66.jpg";
 
 export const metadata: Metadata = {
   title: "Akahoshi · Nickhil ♥ Nikki",
