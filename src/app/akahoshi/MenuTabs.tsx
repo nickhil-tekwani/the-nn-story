@@ -63,7 +63,7 @@ const groups = [
 const beer = [
   { name: "Sapporo", desc: "Premium Japanese lager." },
   { name: "Hokkaido Handshake", desc: "A Sapporo alongside a shot of umeshu. Umeshu is a Japanese plum liqueur — fruity, sweet-tart, and served cold.", bold: "You can also order the umeshu as a standalone shot if you just want that." },
-  { name: "Toki Whiskey", desc: "Suntory Toki — neat, on the rocks, or as a highball." },
+  { name: "Toki Whiskey", desc: "Suntory Toki — neat, on the rocks, or as a shot." },
 ];
 
 const sake = [
