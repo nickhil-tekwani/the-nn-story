@@ -55,7 +55,7 @@ export default function AkahoshiMenu() {
         <MenuTabs />
 
         <div className={styles.igSection}>
-          <p className={styles.igLabel}>Follow on Instagram</p>
+          <p className={styles.igLabel}>Check them out on IG</p>
           <div className={styles.igRow}>
             <a
               href="https://www.instagram.com/akahoshiramen/"
@@ -81,7 +81,7 @@ export default function AkahoshiMenu() {
                 <circle cx="12" cy="12" r="4.5"/>
                 <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
               </svg>
-              @ramen__lord <span className={styles.igSub}>Mike · RamenLord</span>
+              @ramen__lord
             </a>
           </div>
         </div>
