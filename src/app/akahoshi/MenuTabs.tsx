@@ -21,7 +21,7 @@ const bowls = [
   },
   {
     name: "Hiyashi Tantanmen",
-    desc: "A cold riff on the soupless tantanmen — tart and bracing. Sesame, black vinegar, chili oil, chilled thick noodles, cucumber, cilantro, bok choi, crumbled cashews. $19",
+    desc: "A cold riff on the soupless tantanmen — tart and bracing. Sesame, black vinegar, chili oil, chilled thick noodles, cucumber, cilantro, bok choi, crumbled cashews.",
     tag: "Limited · Cold",
   },
   {
@@ -162,7 +162,7 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
         </p>
         <p className={styles.rec}>
           <span className={styles.recLabel}>Also</span>
-          <strong>Hiyashi Tantanmen</strong> (limited, $19) — cold sesame
+          <strong>Hiyashi Tantanmen</strong> (limited) — cold sesame
           noodles with black vinegar and chili oil. A great pick if you want
           something refreshing instead of hot.
         </p>
@@ -232,7 +232,7 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
       {!guest.sesameFree && (
         <p className={styles.rec}>
           <span className={styles.recLabel}>Also</span>
-          <strong>Hiyashi Tantanmen</strong> (limited, $19) — ask for the
+          <strong>Hiyashi Tantanmen</strong> (limited) — ask for the
           vegetarian version. Cold sesame noodles, black vinegar, chili oil,
           cucumber. A cold option if you don&apos;t want something hot.
         </p>
