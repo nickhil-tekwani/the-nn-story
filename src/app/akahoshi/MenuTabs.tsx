@@ -20,6 +20,11 @@ const bowls = [
     tag: "Veg on request",
   },
   {
+    name: "Hiyashi Tantanmen",
+    desc: "A cold riff on the soupless tantanmen — tart and bracing. Sesame, black vinegar, chili oil, chilled thick noodles, cucumber, cilantro, bok choi, crumbled cashews. $19",
+    tag: "Limited · Cold",
+  },
+  {
     name: "Veggie-Kotsu",
     desc: "A plant-based tonkotsu. Cashew cream, soy milk, burnt garlic oil, baked tofu, woodear, nori. Vegan on request.",
     tag: "Vegetarian",
@@ -150,6 +155,12 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
           <strong>Soupless Tantanmen</strong> if you want noodles only, no
           broth.
         </p>
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Also</span>
+          <strong>Hiyashi Tantanmen</strong> (limited, $19) — cold sesame
+          noodles with black vinegar and chili oil. A great pick if you want
+          something refreshing instead of hot.
+        </p>
         <p className={styles.tip}>
           Add a soft-boiled egg or Mala/Gekikara spice powder — both available
           on request.
@@ -211,6 +222,14 @@ function PersonalizedCard({ guest }: { guest: Guest }) {
           <span className={styles.recLabel}>Or</span>
           <strong>Soupless Tantanmen, hold the pork</strong> — noodles only, no
           broth, can be made fully vegan.
+        </p>
+      )}
+      {!guest.sesameFree && (
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Also</span>
+          <strong>Hiyashi Tantanmen</strong> (limited, $19) — ask for the
+          vegetarian version. Cold sesame noodles, black vinegar, chili oil,
+          cucumber. A cold option if you don&apos;t want something hot.
         </p>
       )}
       {guest.egg && !guest.noVisibleEgg && (
