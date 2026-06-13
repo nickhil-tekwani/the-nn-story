@@ -8,13 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "qr": "node scripts/make-qr.js",
+    "gallery:add": "node scripts/gallery-add.js",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@vercel/blob": "^2.4.0",
     "drizzle-orm": "^0.38.3",
+    "image-size": "^2.0.2",
     "next": "^15.1.6",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",
