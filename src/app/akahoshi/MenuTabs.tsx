@@ -442,7 +442,7 @@ export default function MenuTabs() {
                 <p className={styles.bowlName}>{d.name}</p>
                 <p className={styles.bowlDesc}>{d.desc}</p>
                 {d.flavors && (
-                  <div className={styles.pillRow} style={{ marginTop: "0.6rem" }}>
+                  <div className={styles.pillRow} style={{ marginTop: "0.6rem", justifyContent: "flex-start" }}>
                     {d.flavors.map((f) => (
                       <span key={f} className={styles.pill}>{f}</span>
                     ))}
