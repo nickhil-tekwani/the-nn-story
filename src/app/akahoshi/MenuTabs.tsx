@@ -16,12 +16,8 @@ const bowls = [
   },
   {
     name: "Soupless Tantanmen",
-    desc: "Thick noodles, ma-la spice, sesame, pork soboro, blanched bok choi. Can be made vegetarian or vegan.",
+    desc: "Thick noodles, Mala or Gekikara spice powder, sesame, pork soboro, blanched bok choi. Can be made vegetarian or vegan.",
     tag: "Veg on request",
-  },
-  {
-    name: "Aburasoba",
-    desc: "Soupless noodles, garlic, soy sauce, menma, beansprouts, chopped chashu, crispy textures.",
   },
   {
     name: "Veggie-Kotsu",
@@ -36,32 +32,24 @@ const groups = [
     name: "Fully Vegetarian",
     diet: "No pork, chicken, or fish",
     best: "Veggie-Kotsu, as-is — broth and toppings are already vegetarian.",
-    alt: "Soupless Tantanmen, hold the pork.",
+    alt: "Soupless Tantanmen, hold the pork — noodles only, no broth.",
     tip: "Add an egg to either for the full experience.",
   },
   {
     num: 2,
-    name: "Chicken Only",
-    diet: "Chicken yes; no pork or fish",
+    name: "No Pork",
+    diet: "Chicken + fish OK; skip the pork",
     best: "Midwest Shoyu — remove the pork topping, keep the chicken.",
-    alt: "Soupless Tantanmen, hold the pork, add chicken for protein.",
-    tip: "Extra egg or mala spice on request.",
+    alt: "Soupless Tantanmen, hold the pork — noodles only, no broth.",
+    tip: "Extra egg or Mala/Gekikara spice powder on request.",
   },
   {
     num: 3,
-    name: "Pescatarian",
-    diet: "Fish + chicken; no pork",
-    best: "Midwest Shoyu — broth has chicken & fish. Just remove the pork topping.",
-    alt: "Soupless Tantanmen, hold the pork, add chicken.",
-    tip: "Extra egg or mala spice on request.",
-  },
-  {
-    num: 4,
     name: "Eat Everything",
     diet: "Pork, chicken, fish — the works",
     best: "Akahoshi Miso — broth and toppings both bring the pork. The full experience.",
     alt: "Midwest Shoyu for a lighter broth, or Soupless Tantanmen.",
-    tip: "Add an egg or mala spice and go all in.",
+    tip: "Add an egg or Mala/Gekikara spice powder and go all in.",
   },
 ];
 
@@ -98,15 +86,169 @@ const naDrinks = [
   { name: "Coke · Diet Coke · Sprite", desc: "The classics, ice cold." },
 ];
 
-const TABS = ["The Bowls", "Drinks"];
+/* ---- Guest data ---- */
+
+type Guest = {
+  name: string;
+  chicken: boolean;
+  pork: boolean;
+  egg: boolean;
+  dairyFree?: boolean;   // also egg-free (Saarthi)
+  sesameFree?: boolean;  // also nut-free (Diya)
+  noVisibleEgg?: boolean; // ok hidden in baked goods, not on a bowl (Sidhi)
+};
+
+const guests: Guest[] = [
+  { name: "Adarsh Kapoor",      chicken: true,  pork: true,  egg: true  },
+  { name: "Aishu Tallikar",     chicken: true,  pork: false, egg: true  },
+  { name: "Aneesh Singh",       chicken: true,  pork: true,  egg: true  },
+  { name: "Ashnee Patel",       chicken: true,  pork: true,  egg: true  },
+  { name: "Atharva Mehendale",  chicken: true,  pork: true,  egg: true  },
+  { name: "Devki Patel",        chicken: false, pork: false, egg: true  },
+  { name: "Diya Jindal",        chicken: false, pork: false, egg: true,  sesameFree: true },
+  { name: "Esha Aggarwal",      chicken: true,  pork: true,  egg: true  },
+  { name: "Krishna Revur",      chicken: false, pork: false, egg: true  },
+  { name: "Manshu Sharma",      chicken: true,  pork: false, egg: true  },
+  { name: "nikki",              chicken: true,  pork: true,  egg: true  },
+  { name: "Pav Pennathur",      chicken: false, pork: false, egg: true  },
+  { name: "Pri Balekai",        chicken: false, pork: false, egg: true  },
+  { name: "Priya Srini",        chicken: true,  pork: false, egg: true  },
+  { name: "Rahul Bahl",         chicken: true,  pork: true,  egg: true  },
+  { name: "Ria Marathe",        chicken: true,  pork: true,  egg: true  },
+  { name: "Rishi Karthik",      chicken: true,  pork: false, egg: true  },
+  { name: "Rishi Reddy",        chicken: true,  pork: true,  egg: true  },
+  { name: "Roshan Shirahatti",  chicken: true,  pork: false, egg: true  },
+  { name: "Saarthi Jethi",      chicken: true,  pork: false, egg: false, dairyFree: true },
+  { name: "Sanjay Ganesh",      chicken: true,  pork: true,  egg: true  },
+  { name: "Shivani Goyal",      chicken: false, pork: false, egg: true  },
+  { name: "Shreya Shaw",        chicken: true,  pork: true,  egg: true  },
+  { name: "Sidhi Birani",       chicken: false, pork: false, egg: false, noVisibleEgg: true },
+  { name: "Sruthi Murugesh",    chicken: true,  pork: false, egg: true  },
+  { name: "tek",                chicken: true,  pork: true,  egg: true  },
+  { name: "Vidhan Bhardwaj",    chicken: false, pork: false, egg: true  },
+  { name: "Yash Goyal",         chicken: true,  pork: true,  egg: true  },
+];
+
+/* ---- Personalized card ---- */
+
+function PersonalizedCard({ guest }: { guest: Guest }) {
+  if (guest.pork) {
+    return (
+      <div className={styles.guestCard}>
+        <p className={styles.guestOpener}>
+          You eat everything — you&apos;re exactly who Akahoshi built this menu
+          for. Order freely.
+        </p>
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Order</span>
+          <strong>Akahoshi Miso</strong> — the namesake bowl. Full pork chashu,
+          crinkly Sapporo noodles, the whole deal.
+        </p>
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Or</span>
+          <strong>Midwest Shoyu</strong> for a lighter broth, or{" "}
+          <strong>Soupless Tantanmen</strong> if you want noodles only, no
+          broth.
+        </p>
+        <p className={styles.tip}>
+          Add a soft-boiled egg or Mala/Gekikara spice powder — both available
+          on request.
+        </p>
+      </div>
+    );
+  }
+
+  if (guest.chicken) {
+    return (
+      <div className={styles.guestCard}>
+        <p className={styles.guestOpener}>
+          I see you eat chicken but not pork — the Midwest Shoyu was built for
+          you.
+        </p>
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Order</span>
+          <strong>Midwest Shoyu</strong> — ask them to remove the pork chashu
+          topping. The shio-koji chicken stays, and the broth has chicken +
+          katsuobushi (fish).
+        </p>
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Or</span>
+          <strong>Soupless Tantanmen, hold the pork</strong> — noodles only,
+          no broth, if you want something different.
+        </p>
+        {guest.egg && (
+          <p className={styles.tip}>
+            Add a soft-boiled egg or Mala/Gekikara spice powder on request.
+          </p>
+        )}
+        {guest.dairyFree && (
+          <p className={styles.guestWarning}>
+            Since you&apos;re allergic to dairy and eggs: skip the egg add-on,
+            and avoid the Veggie-Kotsu (cashew cream broth). Let your server
+            know — they&apos;ll look out for you.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Vegetarian
+  return (
+    <div className={styles.guestCard}>
+      <p className={styles.guestOpener}>
+        {guest.noVisibleEgg
+          ? "You don't eat meat and skip visible eggs — both plant-based bowls work great for you."
+          : "You don't eat any meat — the plant-based options here are genuinely good."}
+      </p>
+      <p className={styles.rec}>
+        <span className={styles.recLabel}>Order</span>
+        <strong>Veggie-Kotsu</strong> — plant-based tonkotsu with cashew cream,
+        soy milk, burnt garlic oil, baked tofu. Already vegetarian as-is,
+        nothing to change.
+      </p>
+      {!guest.sesameFree && (
+        <p className={styles.rec}>
+          <span className={styles.recLabel}>Or</span>
+          <strong>Soupless Tantanmen, hold the pork</strong> — noodles only, no
+          broth, can be made fully vegan.
+        </p>
+      )}
+      {guest.egg && !guest.noVisibleEgg && (
+        <p className={styles.tip}>
+          Add a soft-boiled egg to either for extra richness.
+        </p>
+      )}
+      {guest.noVisibleEgg && (
+        <p className={styles.tip}>
+          Skip the soft-boiled egg add-on — but everything else on the
+          Veggie-Kotsu is totally fine.
+        </p>
+      )}
+      {guest.sesameFree && (
+        <p className={styles.guestWarning}>
+          Since you&apos;re allergic to sesame and nuts, skip the Soupless
+          Tantanmen — it has sesame. Stick to Veggie-Kotsu and let your server
+          know about your allergies so they can confirm the prep.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ---- Tab component ---- */
+
+const TABS = ["Bowls", "Drinks"];
 
 export default function MenuTabs() {
   const [active, setActive] = useState(0);
+  const [selectedName, setSelectedName] = useState("");
   const panelRefs = [
     useRef<HTMLDivElement>(null),
     useRef<HTMLDivElement>(null),
   ];
   const [height, setHeight] = useState<number | undefined>(undefined);
+
+  const selectedGuest = guests.find((g) => g.name === selectedName) ?? null;
 
   // Size the viewport to the active panel so the slide also grows/shrinks smoothly.
   useLayoutEffect(() => {
@@ -120,8 +262,39 @@ export default function MenuTabs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
+  // Re-measure when a guest is selected (card changes panel height).
+  useLayoutEffect(() => {
+    const el = panelRefs[active].current;
+    if (el) setHeight(el.offsetHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGuest]);
+
   return (
     <div>
+      {/* Guest picker */}
+      <div className={styles.guestSection}>
+        <label className={styles.guestLabel} htmlFor="guest-select">
+          Who are you?
+        </label>
+        <div className={styles.guestSelectWrap}>
+          <select
+            id="guest-select"
+            className={styles.guestSelect}
+            value={selectedName}
+            onChange={(e) => setSelectedName(e.target.value)}
+          >
+            <option value="">Pick your name →</option>
+            {guests.map((g) => (
+              <option key={g.name} value={g.name}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+          <span className={styles.guestSelectArrow} aria-hidden>▾</span>
+        </div>
+        {selectedGuest && <PersonalizedCard guest={selectedGuest} />}
+      </div>
+
       <div role="tablist" aria-label="Menu" className={styles.tabs}>
         {TABS.map((label, i) => (
           <button
@@ -141,7 +314,7 @@ export default function MenuTabs() {
           className={styles.track}
           style={{ transform: `translateX(-${active * 50}%)` }}
         >
-          {/* Panel 0 — The Bowls + Find Your Group */}
+          {/* Panel 0 — Bowls + Find Your Group */}
           <div
             ref={panelRefs[0]}
             className={styles.panel}
@@ -178,6 +351,11 @@ export default function MenuTabs() {
                 <p className={styles.tip}>{g.tip}</p>
               </div>
             ))}
+            <p className={styles.footerNote}>
+              Every bowl can have the pork topping removed — just ask. Egg and
+              Mala/Gekikara spice powder are available add-ons. When in doubt,
+              ask your server.
+            </p>
           </div>
 
           {/* Panel 1 — Drinks */}

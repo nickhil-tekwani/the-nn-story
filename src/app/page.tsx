@@ -6,7 +6,27 @@ import PhoneClaim from "@/components/PhoneClaim";
 import RsvpForm from "@/components/RsvpForm";
 import { getClaimedGuest, getRsvp } from "@/lib/guest";
 
+// ─── COMING SOON GATE ────────────────────────────────────────────────────────
+// Set to false to restore the full page. See CLAUDE.md for details.
+const COMING_SOON = true;
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default async function Home() {
+  if (COMING_SOON) {
+    return (
+      <main className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center">
+        <VideoBackground />
+        <p className="font-sans text-xs uppercase tracking-[0.3em]" style={{ color: "rgba(250,247,242,0.7)" }}>
+          Nickhil &amp; Nikki
+        </p>
+        <h1 className="mt-4 text-5xl leading-tight sm:text-6xl">Coming Soon</h1>
+        <p className="mt-6 font-sans text-sm" style={{ color: "rgba(250,247,242,0.65)" }}>
+          The full invite is on its way — check back shortly.
+        </p>
+      </main>
+    );
+  }
+
   const session = await auth();
   const email = session?.user?.email;
 

@@ -31,7 +31,7 @@ export default function AkahoshiMenu() {
           </p>
           <h1 className={styles.title}>How to Order</h1>
           <p className={styles.meta}>
-            Engagement Celebration · Akahoshi Ramen, Chicago
+            Akahoshi Ramen, Logan Square, Chicago
           </p>
           <p className={styles.intro}>
             We&apos;re so glad you&apos;re here. Here&apos;s a little guide to
@@ -42,10 +42,6 @@ export default function AkahoshiMenu() {
         <MenuTabs />
 
         <footer className={styles.footer}>
-          <p className={styles.footerNote}>
-            Every bowl can have the pork topping removed — just ask. Egg and
-            mala spice are available add-ons. When in doubt, ask your server.
-          </p>
           <p className={styles.signoff}>
             Thank you for celebrating with us{" "}
             <span className={styles.star}>★</span>
