@@ -124,6 +124,7 @@ const guests: Guest[] = [
   { name: "Rishi Karthik",      chicken: true,  pork: false, egg: true  },
   { name: "Rishi Reddy",        chicken: true,  pork: true,  egg: true  },
   { name: "Roshan Shirahatti",  chicken: true,  pork: false, egg: true  },
+  { name: "Rucha Mehendale",    chicken: true,  pork: true,  egg: true  },
   { name: "Saarthi Jethi",      chicken: true,  pork: false, egg: false, dairyFree: true },
   { name: "Sanjay Ganesh",      chicken: true,  pork: true,  egg: true  },
   { name: "Shivani Goyal",      chicken: false, pork: false, egg: true  },
