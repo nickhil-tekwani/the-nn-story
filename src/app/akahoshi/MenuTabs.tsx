@@ -93,6 +93,7 @@ const highballVariants = [
 
 const naDrinks = [
   { name: "Sapporo N/A", desc: "Non-alcoholic Japanese lager." },
+  { name: "Ramune", desc: "The original Japanese marble soda. Flavors: Original, Melon, Grape, or Lychee." },
   { name: "Coke · Diet Coke · Sprite", desc: "The classics, ice cold." },
 ];
 
