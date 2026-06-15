@@ -5,19 +5,21 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/AuthButtons";
 import { formatPhone } from "@/lib/phone";
 
-type GuestRow = {
+type GroupRow = {
   id: number;
-  name: string;
-  phone: string;
+  invitedNames: string[];
+  phones: string[];
   maxPartySize: number;
   claimedByEmail: string | null;
+  claimedByPhone: string | null;
   attending: boolean | null;
   needsHotel: boolean | null;
   partySize: number | null;
+  partyMembers: string[];
 };
 
 export default function AdminPortal() {
-  const [guests, setGuests] = useState<GuestRow[]>([]);
+  const [groups, setGroups] = useState<GroupRow[]>([]);
   const [csv, setCsv] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function AdminPortal() {
     const res = await fetch("/api/admin/guests");
     if (res.ok) {
       const data = await res.json();
-      setGuests(data.guests);
+      setGroups(data.groups);
     }
   }, []);
 
@@ -51,7 +53,7 @@ export default function AdminPortal() {
       }
       const errs = (data.errors as string[]) ?? [];
       setStatus(
-        `Processed ${data.processed} guest(s).` +
+        `Created ${data.created}, updated ${data.updated} group(s).` +
           (errs.length ? ` Skipped ${errs.length}: ${errs.join(" ")}` : ""),
       );
       setCsv("");
@@ -61,13 +63,13 @@ export default function AdminPortal() {
     }
   }
 
-  const attendingCount = guests
+  const attendingCount = groups
     .filter((g) => g.attending)
     .reduce((sum, g) => sum + (g.partySize ?? 0), 0);
 
   return (
     <main className="min-h-screen bg-stone-900 px-6 py-10 font-sans text-stone-100">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Guest Admin</h1>
           <div className="flex items-center gap-4 text-sm">
@@ -80,20 +82,24 @@ export default function AdminPortal() {
 
         {/* Upload */}
         <section className="mb-10 rounded-xl border border-stone-700 bg-stone-800 p-6">
-          <h2 className="mb-2 text-lg font-medium">Add / update guests</h2>
+          <h2 className="mb-2 text-lg font-medium">Add / update groups</h2>
           <p className="mb-4 text-sm text-stone-400">
-            Paste CSV rows: <code>name, phone, max_party_size</code>. A header
-            row is optional. Existing guests (matched by phone) are updated;
-            claims are preserved. Phones are normalized automatically — a bare
-            10-digit number is treated as US (+1); prefix India numbers with{" "}
-            <code>+91</code> (e.g. <code>+91 98765 43210</code>).
+            Paste CSV rows with two columns: <code>names, phones</code>. Each cell
+            is a list separated by <code>;</code> or <code>|</code>. The number of
+            names sets the group&apos;s max party size. Any phone on a group&apos;s
+            list can claim the invite. Re-uploading matches existing groups by a
+            shared phone (claims &amp; RSVPs are preserved). Phones are normalized
+            — bare 10-digit numbers are treated as US (+1); prefix India numbers
+            with <code>+91</code>.
           </p>
           <form onSubmit={upload}>
             <textarea
               value={csv}
               onChange={(e) => setCsv(e.target.value)}
               rows={6}
-              placeholder={"Jane & John Smith, (513) 555-0142, 4\nAlex Doe, 513-555-0199, 2\nPriya Sharma, +91 98765 43210, 2"}
+              placeholder={
+                '"Nick Tekwani; Nikki; Mom; Dad; Sis", "+1 513 555 0142; +1 513 555 0143"\n"Alex Doe", "513-555-0199"\n"Priya Sharma; Raj Sharma", "+91 98765 43210"'
+              }
               className="w-full rounded-lg border border-stone-600 bg-stone-900 p-3 font-mono text-sm text-stone-100 focus:border-stone-400 focus:outline-none"
             />
             <div className="mt-3 flex items-center gap-4">
@@ -111,8 +117,8 @@ export default function AdminPortal() {
 
         {/* Summary */}
         <div className="mb-4 flex gap-6 text-sm text-stone-400">
-          <span>{guests.length} invited households</span>
-          <span>{guests.filter((g) => g.claimedByEmail).length} verified</span>
+          <span>{groups.length} invited groups</span>
+          <span>{groups.filter((g) => g.claimedByEmail).length} verified</span>
           <span>{attendingCount} attending (incl. guests)</span>
         </div>
 
@@ -121,43 +127,58 @@ export default function AdminPortal() {
           <table className="w-full text-left text-sm">
             <thead className="bg-stone-800 text-stone-400">
               <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Phone</th>
+                <th className="px-4 py-3">Invited</th>
+                <th className="px-4 py-3">Phones</th>
                 <th className="px-4 py-3">Max</th>
-                <th className="px-4 py-3">Verified by</th>
+                <th className="px-4 py-3">Claimed by</th>
                 <th className="px-4 py-3">RSVP</th>
-                <th className="px-4 py-3">Party</th>
+                <th className="px-4 py-3">Attendees</th>
                 <th className="px-4 py-3">Hotel</th>
               </tr>
             </thead>
             <tbody>
-              {guests.map((g) => (
-                <tr key={g.id} className="border-t border-stone-800">
-                  <td className="px-4 py-3">{g.name}</td>
-                  <td className="px-4 py-3 font-mono text-stone-400">
-                    {formatPhone(g.phone)}
+              {groups.map((g) => (
+                <tr key={g.id} className="border-t border-stone-800 align-top">
+                  <td className="px-4 py-3">{g.invitedNames.join(", ")}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-stone-400">
+                    {g.phones.map((p) => (
+                      <div key={p}>{formatPhone(p)}</div>
+                    ))}
                   </td>
                   <td className="px-4 py-3">{g.maxPartySize}</td>
-                  <td className="px-4 py-3 text-stone-400">
-                    {g.claimedByEmail ?? "—"}
+                  <td className="px-4 py-3 text-xs text-stone-400">
+                    {g.claimedByEmail ? (
+                      <>
+                        <div>{g.claimedByEmail}</div>
+                        {g.claimedByPhone && (
+                          <div className="font-mono">
+                            {formatPhone(g.claimedByPhone)}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    {g.attending == null
-                      ? "—"
-                      : g.attending
-                        ? "Yes"
-                        : "No"}
+                    {g.attending == null ? "—" : g.attending ? "Yes" : "No"}
                   </td>
-                  <td className="px-4 py-3">{g.partySize ?? "—"}</td>
+                  <td className="px-4 py-3 text-xs">
+                    {g.partyMembers.length > 0
+                      ? g.partyMembers.join(", ")
+                      : g.partySize != null
+                        ? g.partySize
+                        : "—"}
+                  </td>
                   <td className="px-4 py-3">
                     {g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}
                   </td>
                 </tr>
               ))}
-              {guests.length === 0 && (
+              {groups.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-stone-500">
-                    No guests yet. Upload some above.
+                    No groups yet. Upload some above.
                   </td>
                 </tr>
               )}

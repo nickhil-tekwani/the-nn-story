@@ -6,6 +6,7 @@ type InitialRsvp = {
   attending: boolean;
   needsHotel: boolean;
   partySize: number;
+  partyMembers: string[];
 } | null;
 
 export default function RsvpForm({
@@ -22,20 +23,51 @@ export default function RsvpForm({
   const [partySize, setPartySize] = useState<number>(
     initial?.partySize && initial.partySize > 0 ? initial.partySize : 1,
   );
+  // One name slot per party member. Grows/shrinks with the party-size select,
+  // preserving anything already typed.
+  const [names, setNames] = useState<string[]>(() => {
+    const start = initial?.partyMembers ?? [];
+    const size =
+      initial?.partySize && initial.partySize > 0 ? initial.partySize : 1;
+    return Array.from({ length: size }, (_, i) => start[i] ?? "");
+  });
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<boolean>(Boolean(initial));
   const [loading, setLoading] = useState(false);
+
+  function onPartySizeChange(size: number) {
+    setPartySize(size);
+    setNames((prev) => Array.from({ length: size }, (_, i) => prev[i] ?? ""));
+    setSaved(false);
+  }
+
+  function onNameChange(index: number, value: string) {
+    setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
+    setSaved(false);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
+
+    const trimmed = names.map((n) => n.trim());
+    if (attending && trimmed.some((n) => !n)) {
+      setError("Please enter a name for everyone in your party.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attending, needsHotel, partySize }),
+        body: JSON.stringify({
+          attending,
+          needsHotel,
+          partySize,
+          partyMembers: trimmed,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -59,10 +91,22 @@ export default function RsvpForm({
           Will you be joining us?
         </legend>
         <div className="flex gap-3">
-          <Toggle active={attending} onClick={() => setAttending(true)}>
+          <Toggle
+            active={attending}
+            onClick={() => {
+              setAttending(true);
+              setSaved(false);
+            }}
+          >
             Joyfully accept
           </Toggle>
-          <Toggle active={!attending} onClick={() => setAttending(false)}>
+          <Toggle
+            active={!attending}
+            onClick={() => {
+              setAttending(false);
+              setSaved(false);
+            }}
+          >
             Regretfully decline
           </Toggle>
         </div>
@@ -76,7 +120,7 @@ export default function RsvpForm({
             </label>
             <select
               value={partySize}
-              onChange={(e) => setPartySize(Number(e.target.value))}
+              onChange={(e) => onPartySizeChange(Number(e.target.value))}
               className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 font-sans text-base text-white focus:border-white/50 focus:outline-none"
             >
               {partyOptions.map((n) => (
@@ -89,14 +133,45 @@ export default function RsvpForm({
 
           <fieldset>
             <legend className="mb-3 font-sans text-xs uppercase tracking-widest text-cream/60">
+              Who&apos;s coming?
+            </legend>
+            <div className="space-y-2">
+              {names.map((name, i) => (
+                <input
+                  key={i}
+                  type="text"
+                  value={name}
+                  onChange={(e) => onNameChange(i, e.target.value)}
+                  placeholder={`Guest ${i + 1} full name`}
+                  autoComplete="off"
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 font-sans text-base text-white placeholder:text-white/30 focus:border-white/50 focus:outline-none"
+                />
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="mb-3 font-sans text-xs uppercase tracking-widest text-cream/60">
               Where are you staying?
             </legend>
             <div className="flex gap-3">
-              <Toggle active={needsHotel} onClick={() => setNeedsHotel(true)}>
-                I'll need a hotel
+              <Toggle
+                active={needsHotel}
+                onClick={() => {
+                  setNeedsHotel(true);
+                  setSaved(false);
+                }}
+              >
+                I&apos;ll need a hotel
               </Toggle>
-              <Toggle active={!needsHotel} onClick={() => setNeedsHotel(false)}>
-                I'm in the Cincinnati area
+              <Toggle
+                active={!needsHotel}
+                onClick={() => {
+                  setNeedsHotel(false);
+                  setSaved(false);
+                }}
+              >
+                I&apos;m in the Cincinnati area
               </Toggle>
             </div>
           </fieldset>

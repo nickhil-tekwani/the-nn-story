@@ -36,3 +36,6 @@ yarn-error.log*
 
 # generated QR output (regenerate with `node scripts/make-qr.js`)
 /qr
+
+# local playground — contacts, invite list work, never commit
+/playground

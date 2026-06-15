@@ -1,28 +1,28 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db, rsvps } from "@/db";
-import { getClaimedGuest, getRsvp } from "@/lib/guest";
+import { getClaimedGroup, getRsvp } from "@/lib/guest";
 
 export async function GET() {
   const session = await auth();
-  const guest = await getClaimedGuest(session?.user?.email);
-  if (!guest) {
+  const group = await getClaimedGroup(session?.user?.email);
+  if (!group) {
     return NextResponse.json(
       { error: "You haven't verified an invite yet." },
       { status: 403 },
     );
   }
-  const rsvp = await getRsvp(guest.id);
+  const rsvp = await getRsvp(group.id);
   return NextResponse.json({
-    guest: { name: guest.name, maxPartySize: guest.maxPartySize },
+    group: { maxPartySize: group.maxPartySize },
     rsvp,
   });
 }
 
 export async function POST(req: Request) {
   const session = await auth();
-  const guest = await getClaimedGuest(session?.user?.email);
-  if (!guest) {
+  const group = await getClaimedGroup(session?.user?.email);
+  if (!group) {
     return NextResponse.json(
       { error: "You haven't verified an invite yet." },
       { status: 403 },
@@ -33,6 +33,9 @@ export async function POST(req: Request) {
   const attending = Boolean(body?.attending);
   const needsHotel = Boolean(body?.needsHotel);
   const partySize = Number(body?.partySize);
+  const rawMembers: unknown = body?.partyMembers;
+
+  let partyMembers: string[] = [];
 
   if (attending) {
     if (!Number.isInteger(partySize) || partySize < 1) {
@@ -41,25 +44,42 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    // Enforce the per-household cap set by the admin.
-    if (partySize > guest.maxPartySize) {
+    // Enforce the per-group cap set by the admin.
+    if (partySize > group.maxPartySize) {
       return NextResponse.json(
         {
-          error: `Your party can include at most ${guest.maxPartySize} ${
-            guest.maxPartySize === 1 ? "person" : "people"
+          error: `Your party can include at most ${group.maxPartySize} ${
+            group.maxPartySize === 1 ? "person" : "people"
           }. Reach out to the hosts if that's not right.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    // Collect and validate the attendee names.
+    partyMembers = Array.isArray(rawMembers)
+      ? rawMembers.map((m) => String(m ?? "").trim())
+      : [];
+
+    if (partyMembers.length !== partySize || partyMembers.some((n) => !n)) {
+      return NextResponse.json(
+        {
+          error: `Please enter a name for all ${partySize} ${
+            partySize === 1 ? "guest" : "guests"
+          } in your party.`,
         },
         { status: 400 },
       );
     }
   }
 
-  // Not attending → store party size of 0 and no hotel.
+  // Not attending → store party size of 0, no hotel, no names.
   const values = {
-    guestId: guest.id,
+    groupId: group.id,
     attending,
     needsHotel: attending ? needsHotel : false,
     partySize: attending ? partySize : 0,
+    partyMembers: attending ? partyMembers : [],
     updatedAt: new Date(),
   };
 
@@ -67,11 +87,12 @@ export async function POST(req: Request) {
     .insert(rsvps)
     .values(values)
     .onConflictDoUpdate({
-      target: rsvps.guestId,
+      target: rsvps.groupId,
       set: {
         attending: values.attending,
         needsHotel: values.needsHotel,
         partySize: values.partySize,
+        partyMembers: values.partyMembers,
         updatedAt: values.updatedAt,
       },
     });

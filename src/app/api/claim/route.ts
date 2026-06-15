@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { auth } from "@/auth";
-import { db, guests } from "@/db";
+import { db, groups, groupPhones } from "@/db";
 import { normalizePhone } from "@/lib/phone";
 
+/** Last 4 digits of an E.164 number, for a friendly "ending in 4040" hint. */
+function lastFour(e164: string | null): string {
+  const digits = (e164 ?? "").replace(/\D/g, "");
+  return digits.slice(-4);
+}
+
 /**
- * Claim an invite by phone number. Binds the signed-in Google account to a
- * matching, unclaimed row on the guest list.
+ * Claim an invite by phone number. Any phone number on a group's list can claim
+ * the group; once claimed, the group is locked to one Google account, and other
+ * members are pointed back to the claimer.
  */
 export async function POST(req: Request) {
   const session = await auth();
@@ -15,14 +22,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  // If this account already claimed an invite, treat it as success (idempotent).
-  const [existing] = await db
-    .select()
-    .from(guests)
-    .where(eq(guests.claimedByEmail, email))
+  // If this account already claimed a group, treat it as success (idempotent).
+  const [already] = await db
+    .select({ id: groups.id })
+    .from(groups)
+    .where(eq(groups.claimedByEmail, email))
     .limit(1);
-  if (existing) {
-    return NextResponse.json({ ok: true, guest: { name: existing.name } });
+  if (already) {
+    return NextResponse.json({ ok: true });
   }
 
   const body = await req.json().catch(() => null);
@@ -35,23 +42,11 @@ export async function POST(req: Request) {
     );
   }
 
-  // Only claim a row that matches the phone AND is still unclaimed. Doing the
-  // claimed-check inside the UPDATE avoids a race between two simultaneous logins.
-  const claimed = await db
-    .update(guests)
-    .set({ claimedByEmail: email, claimedAt: new Date() })
-    .where(and(eq(guests.phone, phone), isNull(guests.claimedByEmail)))
-    .returning({ name: guests.name });
-
-  if (claimed.length > 0) {
-    return NextResponse.json({ ok: true, guest: { name: claimed[0].name } });
-  }
-
-  // Nothing was claimed: figure out why (not on list vs. already claimed).
+  // Find which group this number belongs to.
   const [match] = await db
-    .select({ claimedByEmail: guests.claimedByEmail })
-    .from(guests)
-    .where(eq(guests.phone, phone))
+    .select({ groupId: groupPhones.groupId })
+    .from(groupPhones)
+    .where(eq(groupPhones.phone, phone))
     .limit(1);
 
   if (!match) {
@@ -64,8 +59,32 @@ export async function POST(req: Request) {
     );
   }
 
+  // Atomically claim the group only if it's still unclaimed. Doing the
+  // unclaimed-check inside the UPDATE avoids a race between two members.
+  const claimed = await db
+    .update(groups)
+    .set({ claimedByEmail: email, claimedByPhone: phone, claimedAt: new Date() })
+    .where(and(eq(groups.id, match.groupId), isNull(groups.claimedByEmail)))
+    .returning({ id: groups.id });
+
+  if (claimed.length > 0) {
+    return NextResponse.json({ ok: true });
+  }
+
+  // Already claimed by someone else — point them to the claimer's number.
+  const [g] = await db
+    .select({ claimedByPhone: groups.claimedByPhone })
+    .from(groups)
+    .where(eq(groups.id, match.groupId))
+    .limit(1);
+
+  const hint = lastFour(g?.claimedByPhone ?? null);
   return NextResponse.json(
-    { error: "That number has already been claimed by another account." },
+    {
+      error: hint
+        ? `This invite was already claimed by the number ending in ${hint}. Ask them to sign in to view or update the RSVP.`
+        : "This invite has already been claimed by another member of your group.",
+    },
     { status: 409 },
   );
 }
