@@ -134,6 +134,7 @@ export default function AdminPortal() {
                 <th className="px-4 py-3">RSVP</th>
                 <th className="px-4 py-3">Attendees</th>
                 <th className="px-4 py-3">Hotel</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -173,11 +174,14 @@ export default function AdminPortal() {
                   <td className="px-4 py-3">
                     {g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}
                   </td>
+                  <td className="px-4 py-3">
+                    <DeleteButton groupId={g.id} onDeleted={load} />
+                  </td>
                 </tr>
               ))}
               {groups.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-stone-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-stone-500">
                     No groups yet. Upload some above.
                   </td>
                 </tr>
@@ -187,5 +191,56 @@ export default function AdminPortal() {
         </section>
       </div>
     </main>
+  );
+}
+
+function DeleteButton({
+  groupId,
+  onDeleted,
+}: {
+  groupId: number;
+  onDeleted: () => void;
+}) {
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleDelete() {
+    setLoading(true);
+    try {
+      await fetch(`/api/admin/guests/${groupId}`, { method: "DELETE" });
+      onDeleted();
+    } finally {
+      setLoading(false);
+      setConfirm(false);
+    }
+  }
+
+  if (confirm) {
+    return (
+      <div className="flex gap-2">
+        <button
+          onClick={handleDelete}
+          disabled={loading}
+          className="rounded px-2 py-1 text-xs font-medium text-rose-400 hover:text-rose-300 disabled:opacity-50"
+        >
+          {loading ? "…" : "Confirm"}
+        </button>
+        <button
+          onClick={() => setConfirm(false)}
+          className="rounded px-2 py-1 text-xs text-stone-500 hover:text-stone-300"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirm(true)}
+      className="rounded px-2 py-1 text-xs text-stone-600 hover:text-rose-400 transition"
+    >
+      Delete
+    </button>
   );
 }
