@@ -18,6 +18,12 @@ type GroupRow = {
   partyMembers: string[];
 };
 
+const BORDER = "1px solid rgba(26,22,19,0.12)";
+const MUTED = "var(--ink-muted)";
+const INK = "var(--ink-warm)";
+const PAPER = "var(--paper)";
+const STAR = "#c1121f";
+
 export default function AdminPortal() {
   const [groups, setGroups] = useState<GroupRow[]>([]);
   const [csv, setCsv] = useState("");
@@ -87,11 +93,7 @@ export default function AdminPortal() {
   async function bulkAction(method: "DELETE" | "PATCH") {
     setBulkLoading(true);
     try {
-      await Promise.all(
-        [...selected].map((id) =>
-          fetch(`/api/admin/guests/${id}`, { method }),
-        ),
-      );
+      await Promise.all([...selected].map((id) => fetch(`/api/admin/guests/${id}`, { method })));
       await load();
     } finally {
       setBulkLoading(false);
@@ -105,83 +107,144 @@ export default function AdminPortal() {
     .reduce((sum, g) => sum + (g.partySize ?? 0), 0);
 
   return (
-    <main className="min-h-screen bg-stone-900 px-6 py-10 font-sans text-stone-100">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Guest Admin</h1>
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/" className="underline">View site</Link>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: PAPER,
+        padding: "2.5rem 1.5rem",
+        fontFamily: "var(--font-pt), Georgia, serif",
+        color: INK,
+        WebkitFontSmoothing: "antialiased",
+      }}
+    >
+      <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+        {/* Header */}
+        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
+          <h1 style={{ fontFamily: "var(--font-gilda), serif", fontWeight: 400, fontSize: "1.8rem", margin: 0 }}>
+            Guest Admin <span style={{ color: STAR }}>★</span>
+          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem" }}>
+            <Link href="/" style={{ color: MUTED, textDecoration: "underline" }}>View site</Link>
             <SignOutButton />
           </div>
         </header>
 
         {/* Upload */}
-        <section className="mb-10 rounded-xl border border-stone-700 bg-stone-800 p-6">
-          <h2 className="mb-2 text-lg font-medium">Add / update groups</h2>
-          <p className="mb-4 text-sm text-stone-400">
-            Paste CSV rows with two columns: <code>names, phones</code>. Each cell
-            is a list separated by <code>;</code> or <code>|</code>. The number of
-            names sets the group&apos;s max party size. Any phone on a group&apos;s
-            list can claim the invite. Re-uploading matches existing groups by a
-            shared phone (claims &amp; RSVPs are preserved). Phones are normalized
-            — bare 10-digit numbers are treated as US (+1); prefix India numbers
-            with <code>+91</code>.
+        <section
+          style={{
+            marginBottom: "2.5rem",
+            border: BORDER,
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            background: "#faf9f6",
+          }}
+        >
+          <h2 style={{ fontFamily: "var(--font-gilda), serif", fontWeight: 400, fontSize: "1.2rem", margin: "0 0 0.5rem" }}>
+            Add / update groups
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: MUTED, margin: "0 0 1rem", lineHeight: 1.6 }}>
+            Paste CSV rows with two columns: <code>names, phones</code>. Each cell is a list separated by{" "}
+            <code>;</code> or <code>|</code>. The number of names sets the group&apos;s max party size. Any phone can
+            claim the invite. Re-uploading matches by shared phone (claims &amp; RSVPs preserved). Bare 10-digit numbers
+            treated as US; prefix India with <code>+91</code>.
           </p>
           <form onSubmit={upload}>
             <textarea
               value={csv}
               onChange={(e) => setCsv(e.target.value)}
-              rows={6}
-              placeholder={
-                '"Nick Tekwani; Nikki; Mom; Dad; Sis", "+1 513 555 0142; +1 513 555 0143"\n"Alex Doe", "513-555-0199"\n"Priya Sharma; Raj Sharma", "+91 98765 43210"'
-              }
-              className="w-full rounded-lg border border-stone-600 bg-stone-900 p-3 font-mono text-sm text-stone-100 focus:border-stone-400 focus:outline-none"
+              rows={5}
+              placeholder={`"Nick Tekwani; Nikki; Mom", "+1 513 555 0142; +1 513 555 0143"\n"Alex Doe", "513-555-0199"`}
+              style={{
+                width: "100%",
+                border: BORDER,
+                borderRadius: "0.5rem",
+                background: PAPER,
+                padding: "0.65rem 0.9rem",
+                fontFamily: "monospace",
+                fontSize: "0.82rem",
+                color: INK,
+                outline: "none",
+                boxSizing: "border-box",
+                resize: "vertical",
+              }}
             />
-            <div className="mt-3 flex items-center gap-4">
+            <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
               <button
                 type="submit"
                 disabled={loading || !csv.trim()}
-                className="rounded-full bg-amber-400 px-5 py-2 text-sm font-medium text-stone-900 transition hover:bg-amber-300 disabled:opacity-50"
+                style={{
+                  borderRadius: "999px",
+                  background: loading || !csv.trim() ? "rgba(26,22,19,0.15)" : INK,
+                  color: PAPER,
+                  border: "none",
+                  padding: "0.55rem 1.25rem",
+                  fontSize: "0.85rem",
+                  cursor: loading || !csv.trim() ? "not-allowed" : "pointer",
+                  fontFamily: "var(--font-pt), serif",
+                  transition: "background 0.2s ease",
+                }}
               >
                 {loading ? "Uploading…" : "Upload"}
               </button>
-              <label className="cursor-pointer rounded-full border border-stone-600 px-5 py-2 text-sm font-medium text-stone-300 transition hover:border-stone-400 hover:text-stone-100">
+              <label
+                style={{
+                  borderRadius: "999px",
+                  border: BORDER,
+                  padding: "0.55rem 1.25rem",
+                  fontSize: "0.85rem",
+                  color: MUTED,
+                  cursor: "pointer",
+                  fontFamily: "var(--font-pt), serif",
+                }}
+              >
                 Choose file
-                <input type="file" accept=".csv,.txt" onChange={onFileChange} className="sr-only" />
+                <input type="file" accept=".csv,.txt" onChange={onFileChange} style={{ display: "none" }} />
               </label>
-              {status && <p className="text-sm text-stone-300">{status}</p>}
+              {status && <p style={{ fontSize: "0.85rem", color: "var(--ink-mid)" }}>{status}</p>}
             </div>
           </form>
         </section>
 
         {/* Summary */}
-        <div className="mb-4 flex gap-6 text-sm text-stone-400">
+        <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.85rem", color: MUTED, marginBottom: "0.75rem" }}>
           <span>{groups.length} invited groups</span>
           <span>{groups.filter((g) => g.claimedByEmail).length} verified</span>
-          <span>{attendingCount} attending (incl. guests)</span>
+          <span>{attendingCount} attending</span>
         </div>
 
-        {/* Bulk action bar */}
+        {/* Bulk bar */}
         {someSelected && (
-          <div className="mb-3 flex items-center gap-4 rounded-lg border border-stone-600 bg-stone-800 px-4 py-2.5 text-sm">
-            <span className="text-stone-300">{selected.size} selected</span>
+          <div
+            style={{
+              marginBottom: "0.75rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              border: BORDER,
+              borderRadius: "0.5rem",
+              padding: "0.6rem 1rem",
+              fontSize: "0.85rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <span style={{ color: INK }}>{selected.size} selected</span>
             <button
               onClick={() => bulkAction("PATCH")}
               disabled={bulkLoading}
-              className="rounded-full border border-stone-500 px-4 py-1.5 text-stone-300 transition hover:border-stone-300 hover:text-white disabled:opacity-50"
+              style={{ borderRadius: "999px", border: BORDER, padding: "0.4rem 1rem", color: INK, background: "none", fontSize: "0.82rem", cursor: "pointer", fontFamily: "var(--font-pt), serif" }}
             >
               {bulkLoading ? "…" : "Unclaim selected"}
             </button>
             <button
               onClick={() => bulkAction("DELETE")}
               disabled={bulkLoading}
-              className="rounded-full border border-rose-800 px-4 py-1.5 text-rose-400 transition hover:border-rose-500 hover:text-rose-300 disabled:opacity-50"
+              style={{ borderRadius: "999px", border: `1px solid rgba(193,18,31,0.3)`, padding: "0.4rem 1rem", color: STAR, background: "none", fontSize: "0.82rem", cursor: "pointer", fontFamily: "var(--font-pt), serif" }}
             >
               {bulkLoading ? "…" : "Delete selected"}
             </button>
             <button
               onClick={() => setSelected(new Set())}
-              className="ml-auto text-stone-500 hover:text-stone-300"
+              style={{ marginLeft: "auto", background: "none", border: "none", fontSize: "0.82rem", color: MUTED, cursor: "pointer" }}
             >
               Clear
             </button>
@@ -189,80 +252,64 @@ export default function AdminPortal() {
         )}
 
         {/* Table */}
-        <section className="overflow-x-auto rounded-xl border border-stone-700">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-stone-800 text-stone-400">
+        <section style={{ overflowX: "auto", borderRadius: "0.75rem", border: BORDER }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
+            <thead style={{ background: "#f5f3ef" }}>
               <tr>
-                <th className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    className="accent-amber-400"
-                  />
-                </th>
-                <th className="px-4 py-3">Invited</th>
-                <th className="px-4 py-3">Phones</th>
-                <th className="px-4 py-3">Max</th>
-                <th className="px-4 py-3">Claimed by</th>
-                <th className="px-4 py-3">RSVP</th>
-                <th className="px-4 py-3">Attendees</th>
-                <th className="px-4 py-3">Hotel</th>
-                <th className="px-4 py-3"></th>
+                <Th>
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ accentColor: STAR }} />
+                </Th>
+                <Th>Invited</Th>
+                <Th>Phones</Th>
+                <Th>Max</Th>
+                <Th>Claimed by</Th>
+                <Th>RSVP</Th>
+                <Th>Attendees</Th>
+                <Th>Hotel</Th>
+                <Th></Th>
               </tr>
             </thead>
             <tbody>
               {groups.map((g) => (
                 <tr
                   key={g.id}
-                  className={`border-t border-stone-800 align-top ${selected.has(g.id) ? "bg-stone-800/50" : ""}`}
+                  style={{
+                    borderTop: BORDER,
+                    verticalAlign: "top",
+                    background: selected.has(g.id) ? "rgba(193,18,31,0.03)" : "transparent",
+                  }}
                 >
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(g.id)}
-                      onChange={() => toggleRow(g.id)}
-                      className="accent-amber-400"
-                    />
-                  </td>
-                  <td className="px-4 py-3">{g.invitedNames.join(", ")}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-stone-400">
-                    {g.phones.map((p) => (
-                      <div key={p}>{formatPhone(p)}</div>
-                    ))}
-                  </td>
-                  <td className="px-4 py-3">{g.maxPartySize}</td>
-                  <td className="px-4 py-3 text-xs text-stone-400">
+                  <Td>
+                    <input type="checkbox" checked={selected.has(g.id)} onChange={() => toggleRow(g.id)} style={{ accentColor: STAR }} />
+                  </Td>
+                  <Td>{g.invitedNames.join(", ")}</Td>
+                  <Td style={{ fontFamily: "monospace", fontSize: "0.78rem", color: MUTED }}>
+                    {g.phones.map((p) => <div key={p}>{formatPhone(p)}</div>)}
+                  </Td>
+                  <Td>{g.maxPartySize}</Td>
+                  <Td style={{ fontSize: "0.78rem", color: MUTED }}>
                     {g.claimedByEmail ? (
                       <>
                         <div>{g.claimedByEmail}</div>
-                        {g.claimedByPhone && (
-                          <div className="font-mono">{formatPhone(g.claimedByPhone)}</div>
-                        )}
+                        {g.claimedByPhone && <div style={{ fontFamily: "monospace" }}>{formatPhone(g.claimedByPhone)}</div>}
                       </>
                     ) : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    {g.attending == null ? "—" : g.attending ? "Yes" : "No"}
-                  </td>
-                  <td className="px-4 py-3 text-xs">
+                  </Td>
+                  <Td>{g.attending == null ? "—" : g.attending ? "Yes" : "No"}</Td>
+                  <Td style={{ fontSize: "0.78rem" }}>
                     {g.partyMembers.length > 0
                       ? g.partyMembers.join(", ")
-                      : g.partySize != null
-                        ? g.partySize
-                        : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    {g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}
-                  </td>
-                  <td className="px-4 py-3">
+                      : g.partySize != null ? g.partySize : "—"}
+                  </Td>
+                  <Td>{g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}</Td>
+                  <Td>
                     <RowActions groupId={g.id} onDone={load} />
-                  </td>
+                  </Td>
                 </tr>
               ))}
               {groups.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-stone-500">
+                  <td colSpan={9} style={{ padding: "2rem", textAlign: "center", color: MUTED }}>
                     No groups yet. Upload some above.
                   </td>
                 </tr>
@@ -272,6 +319,22 @@ export default function AdminPortal() {
         </section>
       </div>
     </main>
+  );
+}
+
+function Th({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <th style={{ padding: "0.65rem 1rem", color: "var(--ink-muted)", fontWeight: 500, fontSize: "0.78rem", letterSpacing: "0.04em", whiteSpace: "nowrap", ...style }}>
+      {children}
+    </th>
+  );
+}
+
+function Td({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <td style={{ padding: "0.65rem 1rem", ...style }}>
+      {children}
+    </td>
   );
 }
 
@@ -292,17 +355,20 @@ function RowActions({ groupId, onDone }: { groupId: number; onDone: () => void }
 
   if (confirm) {
     return (
-      <div className="flex gap-2">
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <button
           onClick={() => act(confirm === "delete" ? "DELETE" : "PATCH")}
           disabled={loading}
-          className={`rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${confirm === "delete" ? "text-rose-400 hover:text-rose-300" : "text-amber-400 hover:text-amber-300"}`}
+          style={{
+            background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer",
+            color: confirm === "delete" ? STAR : "var(--ink-mid)", fontFamily: "var(--font-pt), serif", fontWeight: 600,
+          }}
         >
           {loading ? "…" : "Confirm"}
         </button>
         <button
           onClick={() => setConfirm(null)}
-          className="rounded px-2 py-1 text-xs text-stone-500 hover:text-stone-300"
+          style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif" }}
         >
           Cancel
         </button>
@@ -311,16 +377,16 @@ function RowActions({ groupId, onDone }: { groupId: number; onDone: () => void }
   }
 
   return (
-    <div className="flex gap-1">
+    <div style={{ display: "flex", gap: "0.25rem" }}>
       <button
         onClick={() => setConfirm("unclaim")}
-        className="rounded px-2 py-1 text-xs text-stone-600 transition hover:text-amber-400"
+        style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem" }}
       >
         Unclaim
       </button>
       <button
         onClick={() => setConfirm("delete")}
-        className="rounded px-2 py-1 text-xs text-stone-600 transition hover:text-rose-400"
+        style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem" }}
       >
         Delete
       </button>

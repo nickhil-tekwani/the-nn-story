@@ -9,6 +9,19 @@ type InitialRsvp = {
   partyMembers: string[];
 } | null;
 
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  borderRadius: "0.5rem",
+  border: "1px solid rgba(26,22,19,0.18)",
+  background: "var(--paper)",
+  padding: "0.65rem 1rem",
+  fontFamily: "var(--font-pt), serif",
+  fontSize: "1rem",
+  color: "var(--ink-warm)",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
 export default function RsvpForm({
   maxPartySize,
   initial,
@@ -17,18 +30,13 @@ export default function RsvpForm({
   initial: InitialRsvp;
 }) {
   const [attending, setAttending] = useState<boolean>(initial?.attending ?? true);
-  const [needsHotel, setNeedsHotel] = useState<boolean>(
-    initial?.needsHotel ?? false,
-  );
+  const [needsHotel, setNeedsHotel] = useState<boolean>(initial?.needsHotel ?? false);
   const [partySize, setPartySize] = useState<number>(
     initial?.partySize && initial.partySize > 0 ? initial.partySize : 1,
   );
-  // One name slot per party member. Grows/shrinks with the party-size select,
-  // preserving anything already typed.
   const [names, setNames] = useState<string[]>(() => {
     const start = initial?.partyMembers ?? [];
-    const size =
-      initial?.partySize && initial.partySize > 0 ? initial.partySize : 1;
+    const size = initial?.partySize && initial.partySize > 0 ? initial.partySize : 1;
     return Array.from({ length: size }, (_, i) => start[i] ?? "");
   });
   const [error, setError] = useState<string | null>(null);
@@ -50,30 +58,20 @@ export default function RsvpForm({
     e.preventDefault();
     setError(null);
     setSaved(false);
-
     const trimmed = names.map((n) => n.trim());
     if (attending && trimmed.some((n) => !n)) {
       setError("Please enter a name for everyone in your party.");
       return;
     }
-
     setLoading(true);
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attending,
-          needsHotel,
-          partySize,
-          partyMembers: trimmed,
-        }),
+        body: JSON.stringify({ attending, needsHotel, partySize, partyMembers: trimmed }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-        return;
-      }
+      if (!res.ok) { setError(data.error || "Something went wrong."); return; }
       setSaved(true);
     } catch {
       setError("Network error. Please try again.");
@@ -85,28 +83,16 @@ export default function RsvpForm({
   const partyOptions = Array.from({ length: maxPartySize }, (_, i) => i + 1);
 
   return (
-    <form onSubmit={submit} className="mt-8 space-y-6 text-left">
-      <fieldset>
-        <legend className="mb-3 font-sans text-xs uppercase tracking-widest text-cream/60">
+    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
           Will you be joining us?
         </legend>
-        <div className="flex gap-3">
-          <Toggle
-            active={attending}
-            onClick={() => {
-              setAttending(true);
-              setSaved(false);
-            }}
-          >
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); }}>
             Joyfully accept
           </Toggle>
-          <Toggle
-            active={!attending}
-            onClick={() => {
-              setAttending(false);
-              setSaved(false);
-            }}
-          >
+          <Toggle active={!attending} onClick={() => { setAttending(false); setSaved(false); }}>
             Regretfully decline
           </Toggle>
         </div>
@@ -115,27 +101,25 @@ export default function RsvpForm({
       {attending && (
         <>
           <div>
-            <label className="mb-2 block font-sans text-xs uppercase tracking-widest text-cream/60">
+            <label style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.5rem", display: "block" }}>
               How many in your party? (max {maxPartySize})
             </label>
             <select
               value={partySize}
               onChange={(e) => onPartySizeChange(Number(e.target.value))}
-              className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 font-sans text-base text-white focus:border-white/50 focus:outline-none"
+              style={inputStyle}
             >
               {partyOptions.map((n) => (
-                <option key={n} value={n} className="text-black">
-                  {n} {n === 1 ? "person" : "people"}
-                </option>
+                <option key={n} value={n}>{n} {n === 1 ? "person" : "people"}</option>
               ))}
             </select>
           </div>
 
-          <fieldset>
-            <legend className="mb-3 font-sans text-xs uppercase tracking-widest text-cream/60">
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+            <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
               Who&apos;s coming?
             </legend>
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {names.map((name, i) => (
                 <input
                   key={i}
@@ -144,43 +128,31 @@ export default function RsvpForm({
                   onChange={(e) => onNameChange(i, e.target.value)}
                   placeholder={`Guest ${i + 1} full name`}
                   autoComplete="off"
-                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 font-sans text-base text-white placeholder:text-white/30 focus:border-white/50 focus:outline-none"
+                  style={inputStyle}
                 />
               ))}
             </div>
           </fieldset>
 
-          <fieldset>
-            <legend className="mb-3 font-sans text-xs uppercase tracking-widest text-cream/60">
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+            <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
               Where are you staying?
             </legend>
-            <div className="flex gap-3">
-              <Toggle
-                active={needsHotel}
-                onClick={() => {
-                  setNeedsHotel(true);
-                  setSaved(false);
-                }}
-              >
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <Toggle active={needsHotel} onClick={() => { setNeedsHotel(true); setSaved(false); }}>
                 I&apos;ll need a hotel
               </Toggle>
-              <Toggle
-                active={!needsHotel}
-                onClick={() => {
-                  setNeedsHotel(false);
-                  setSaved(false);
-                }}
-              >
-                I&apos;m in the Cincinnati area
+              <Toggle active={!needsHotel} onClick={() => { setNeedsHotel(false); setSaved(false); }}>
+                I&apos;m local
               </Toggle>
             </div>
           </fieldset>
         </>
       )}
 
-      {error && <p className="font-sans text-sm text-rose-300">{error}</p>}
+      {error && <p style={{ fontSize: "0.85rem", color: "#9b1c1c" }}>{error}</p>}
       {saved && !error && (
-        <p className="font-sans text-sm text-emerald-300">
+        <p style={{ fontSize: "0.85rem", color: "#2d6a4f" }}>
           Thank you — your RSVP is saved. You can update it anytime.
         </p>
       )}
@@ -188,7 +160,19 @@ export default function RsvpForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-full bg-white px-6 py-3 font-sans text-sm font-medium text-stone-800 transition hover:bg-stone-100 disabled:opacity-60"
+        style={{
+          width: "100%",
+          borderRadius: "999px",
+          background: "var(--ink-warm)",
+          color: "var(--paper)",
+          border: "none",
+          padding: "0.75rem 1.5rem",
+          fontFamily: "var(--font-pt), serif",
+          fontSize: "0.9rem",
+          cursor: loading ? "not-allowed" : "pointer",
+          opacity: loading ? 0.6 : 1,
+          transition: "opacity 0.2s ease",
+        }}
       >
         {loading ? "Saving…" : saved ? "Update RSVP" : "Send RSVP"}
       </button>
@@ -209,12 +193,18 @@ function Toggle({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-full border px-4 py-3 font-sans text-sm transition ${
-        active
-          ? "border-white bg-white text-stone-800"
-          : "border-white/30 bg-transparent text-cream/80 hover:border-white/60"
-      }`}
-      style={!active ? { color: "rgba(250,247,242,0.8)" } : undefined}
+      style={{
+        flex: 1,
+        borderRadius: "999px",
+        border: active ? "1px solid var(--ink-warm)" : "1px solid rgba(26,22,19,0.2)",
+        background: active ? "var(--ink-warm)" : "transparent",
+        color: active ? "var(--paper)" : "var(--ink-muted)",
+        padding: "0.6rem 1rem",
+        fontFamily: "var(--font-pt), serif",
+        fontSize: "0.88rem",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+      }}
     >
       {children}
     </button>

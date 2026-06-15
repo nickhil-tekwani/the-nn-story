@@ -1,6 +1,21 @@
 import type { Metadata } from "next";
+import { Gilda_Display, PT_Serif } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+
+const gilda = Gilda_Display({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-gilda",
+  display: "swap",
+});
+const ptSerif = PT_Serif({
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-pt",
+  display: "swap",
+});
 
 const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/nikkinickhill-66.jpg";
 
@@ -26,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${gilda.variable} ${ptSerif.variable}`}>
       <body>
         {children}
         <Analytics />

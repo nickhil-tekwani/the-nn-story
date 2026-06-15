@@ -5,12 +5,19 @@
   --color-ink: #1c1917;
   --color-cream: #faf7f2;
   --color-gold: #b08d57;
+  --color-star: #c1121f;
 }
 
 :root {
   --ink: #1c1917;
   --cream: #faf7f2;
   --gold: #b08d57;
+  --star: #c1121f;
+  --paper: #fdfcf9;
+  --ink-warm: #1a1613;
+  --ink-mid: #38322c;
+  --ink-muted: #6b645c;
+  --ink-faint: #a39c92;
 }
 
 html,

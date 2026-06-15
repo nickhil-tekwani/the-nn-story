@@ -8,13 +8,29 @@ export default async function AdminPage() {
 
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-900 px-6 text-center">
-        <h1 className="text-3xl">Admin</h1>
-        <p className="font-sans text-sm text-stone-400">
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1rem",
+          background: "var(--paper)",
+          padding: "1.5rem",
+          textAlign: "center",
+          fontFamily: "var(--font-pt), Georgia, serif",
+          color: "var(--ink-warm)",
+        }}
+      >
+        <h1 style={{ fontFamily: "var(--font-gilda), serif", fontWeight: 400, fontSize: "2rem", margin: 0 }}>
+          Admin
+        </h1>
+        <p style={{ fontSize: "0.9rem", color: "var(--ink-muted)" }}>
           Sign in with an authorized account.
         </p>
         <SignInButton />
-        <Link href="/" className="font-sans text-sm text-stone-400 underline underline-offset-4 hover:text-stone-200 transition-colors">
+        <Link href="/" style={{ fontSize: "0.85rem", color: "var(--ink-muted)" }}>
           Return home
         </Link>
       </main>
@@ -23,13 +39,29 @@ export default async function AdminPage() {
 
   if (!session.user.isAdmin) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-900 px-6 text-center">
-        <h1 className="text-3xl">Not authorized</h1>
-        <p className="font-sans text-sm text-stone-400">
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1rem",
+          background: "var(--paper)",
+          padding: "1.5rem",
+          textAlign: "center",
+          fontFamily: "var(--font-pt), Georgia, serif",
+          color: "var(--ink-warm)",
+        }}
+      >
+        <h1 style={{ fontFamily: "var(--font-gilda), serif", fontWeight: 400, fontSize: "2rem", margin: 0 }}>
+          Not authorized
+        </h1>
+        <p style={{ fontSize: "0.9rem", color: "var(--ink-muted)" }}>
           {session.user.email} doesn&apos;t have admin access.
         </p>
-        <div className="flex gap-4">
-          <Link href="/" className="font-sans text-sm underline">
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <Link href="/" style={{ fontSize: "0.85rem", color: "var(--ink-muted)", textDecoration: "underline" }}>
             Back to site
           </Link>
           <SignOutButton />

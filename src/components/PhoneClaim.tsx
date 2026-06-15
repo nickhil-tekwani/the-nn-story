@@ -4,6 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { COUNTRIES, DEFAULT_COUNTRY, toE164 } from "@/lib/phone";
 
+const inputStyle: React.CSSProperties = {
+  borderRadius: "0.5rem",
+  border: "1px solid rgba(26,22,19,0.18)",
+  background: "var(--paper)",
+  padding: "0.65rem 1rem",
+  fontFamily: "var(--font-pt), serif",
+  fontSize: "1rem",
+  color: "var(--ink-warm)",
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
 export default function PhoneClaim() {
   const router = useRouter();
   const [dial, setDial] = useState(DEFAULT_COUNTRY.dial);
@@ -11,28 +24,22 @@ export default function PhoneClaim() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const country =
-    COUNTRIES.find((c) => c.dial === dial) ?? DEFAULT_COUNTRY;
+  const country = COUNTRIES.find((c) => c.dial === dial) ?? DEFAULT_COUNTRY;
   const needed = country.nationalDigits;
   const complete = digits.length === needed;
 
   function onDigitsChange(value: string) {
-    // Strip everything that isn't a digit (no dashes/spaces/parens) and cap
-    // the length to the selected country's national number length.
-    const cleaned = value.replace(/\D/g, "").slice(0, needed);
-    setDigits(cleaned);
+    setDigits(value.replace(/\D/g, "").slice(0, needed));
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
     const e164 = toE164(dial, digits);
     if (!e164) {
       setError(`Please enter a ${needed}-digit number for ${country.label}.`);
       return;
     }
-
     setLoading(true);
     try {
       const res = await fetch("/api/claim", {
@@ -41,11 +48,7 @@ export default function PhoneClaim() {
         body: JSON.stringify({ phone: e164 }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-        return;
-      }
-      // Re-render the server page, which now shows the event details + RSVP.
+      if (!res.ok) { setError(data.error || "Something went wrong."); return; }
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -55,31 +58,33 @@ export default function PhoneClaim() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-white/15 bg-black/40 p-8 backdrop-blur-md">
-      <h2 className="mb-2 text-2xl">Confirm your invitation</h2>
-      <p
-        className="mb-6 font-sans text-sm text-cream/70"
-        style={{ color: "rgba(250,247,242,0.7)" }}
+    <div>
+      <h2
+        style={{
+          fontFamily: "var(--font-gilda), serif",
+          fontWeight: 400,
+          fontSize: "1.4rem",
+          color: "var(--ink-warm)",
+          margin: "0 0 0.5rem",
+          textAlign: "center",
+        }}
       >
-        Enter the phone number where you received your invite so we can match you
-        to the guest list.
+        Confirm your invitation
+      </h2>
+      <p style={{ fontSize: "0.88rem", color: "var(--ink-muted)", marginBottom: "1.25rem", textAlign: "center" }}>
+        Enter the phone number where you received your invite.
       </p>
-      <form onSubmit={submit} className="space-y-2">
-        <div className="flex gap-2">
+
+      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
           <select
             value={dial}
-            onChange={(e) => {
-              setDial(e.target.value);
-              setDigits(""); // reset so the count check matches the new country
-              setError(null);
-            }}
+            onChange={(e) => { setDial(e.target.value); setDigits(""); setError(null); }}
             aria-label="Country code"
-            className="rounded-lg border border-white/20 bg-white/10 px-3 py-3 font-sans text-base text-white focus:border-white/50 focus:outline-none"
+            style={{ ...inputStyle, width: "auto", paddingLeft: "0.75rem", paddingRight: "0.75rem" }}
           >
             {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.dial} className="text-black">
-                {c.label}
-              </option>
+              <option key={c.code} value={c.dial}>{c.label}</option>
             ))}
           </select>
           <input
@@ -89,28 +94,35 @@ export default function PhoneClaim() {
             placeholder={"".padStart(needed, "0")}
             value={digits}
             onChange={(e) => onDigitsChange(e.target.value)}
-            className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 font-sans text-base tracking-wide text-white placeholder:text-white/30 focus:border-white/50 focus:outline-none"
+            style={inputStyle}
             required
           />
         </div>
 
-        <p
-          className="font-sans text-xs"
-          style={{
-            color: complete
-              ? "rgba(110,231,183,0.9)"
-              : "rgba(250,247,242,0.5)",
-          }}
-        >
+        <p style={{ fontSize: "0.75rem", color: complete ? "#2d6a4f" : "var(--ink-faint)" }}>
           {digits.length} / {needed} digits
         </p>
 
-        {error && <p className="font-sans text-sm text-rose-300">{error}</p>}
+        {error && (
+          <p style={{ fontSize: "0.85rem", color: "#9b1c1c" }}>{error}</p>
+        )}
 
         <button
           type="submit"
           disabled={loading || !complete}
-          className="mt-2 w-full rounded-full bg-white px-6 py-3 font-sans text-sm font-medium text-stone-800 transition hover:bg-stone-100 disabled:opacity-50"
+          style={{
+            marginTop: "0.5rem",
+            width: "100%",
+            borderRadius: "999px",
+            background: complete && !loading ? "var(--ink-warm)" : "rgba(26,22,19,0.25)",
+            color: "var(--paper)",
+            border: "none",
+            padding: "0.75rem 1.5rem",
+            fontFamily: "var(--font-pt), serif",
+            fontSize: "0.9rem",
+            cursor: complete && !loading ? "pointer" : "not-allowed",
+            transition: "background 0.2s ease",
+          }}
         >
           {loading ? "Checking…" : "Verify invitation"}
         </button>
