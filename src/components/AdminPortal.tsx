@@ -124,7 +124,7 @@ export default function AdminPortal() {
             Guest Admin <span style={{ color: STAR }}>★</span>
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.85rem" }}>
-            <Link href="/" style={{ color: MUTED, textDecoration: "underline" }}>View site</Link>
+            <Link href="/engagement" style={{ color: MUTED, textDecoration: "underline" }}>View site</Link>
             <SignOutButton />
           </div>
         </header>
