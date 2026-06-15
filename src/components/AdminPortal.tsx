@@ -36,6 +36,15 @@ export default function AdminPortal() {
     load();
   }, [load]);
 
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCsv((ev.target?.result as string) ?? "");
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
   async function upload(e: React.FormEvent) {
     e.preventDefault();
     setStatus(null);
@@ -110,6 +119,15 @@ export default function AdminPortal() {
               >
                 {loading ? "Uploading…" : "Upload"}
               </button>
+              <label className="cursor-pointer rounded-full border border-stone-600 px-5 py-2 text-sm font-medium text-stone-300 transition hover:border-stone-400 hover:text-stone-100">
+                Choose file
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  onChange={onFileChange}
+                  className="sr-only"
+                />
+              </label>
               {status && <p className="text-sm text-stone-300">{status}</p>}
             </div>
           </form>
