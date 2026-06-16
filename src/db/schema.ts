@@ -24,10 +24,20 @@ import {
  *    that was used to claim — surfaced to other group members ("ending in 4040")
  *    so they know who to ask to manage the RSVP.
  */
+export const GROUP_LABELS = [
+  "Core",
+  "Nikki Fam Friends",
+  "Nikki Friends",
+  "Nick Fam",
+  "Nick Friends",
+] as const;
+export type GroupLabel = (typeof GROUP_LABELS)[number];
+
 export const groups = pgTable("groups", {
   id: serial("id").primaryKey(),
   invitedNames: text("invited_names").array().notNull().default([]),
   maxPartySize: integer("max_party_size").notNull().default(1),
+  groupLabel: text("group_label").$type<GroupLabel>(),
   claimedByEmail: text("claimed_by_email"),
   claimedByPhone: text("claimed_by_phone"),
   claimedAt: timestamp("claimed_at", { withTimezone: true }),

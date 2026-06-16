@@ -4,18 +4,28 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/AuthButtons";
 import { formatPhone } from "@/lib/phone";
+import type { GroupLabel } from "@/db/schema";
 
 type GroupRow = {
   id: number;
   invitedNames: string[];
   phones: string[];
   maxPartySize: number;
+  groupLabel: GroupLabel | null;
   claimedByEmail: string | null;
   claimedByPhone: string | null;
   attending: boolean | null;
   needsHotel: boolean | null;
   partySize: number | null;
   partyMembers: string[];
+};
+
+const GROUP_COLORS: Record<GroupLabel, { bg: string; text: string }> = {
+  "Core":               { bg: "#fef3c7", text: "#92400e" },
+  "Nikki Fam Friends":  { bg: "#fce7f3", text: "#9d174d" },
+  "Nikki Friends":      { bg: "#fff0f3", text: "#be123c" },
+  "Nick Fam":           { bg: "#dbeafe", text: "#1e40af" },
+  "Nick Friends":       { bg: "#eff6ff", text: "#1d4ed8" },
 };
 
 const BORDER = "1px solid rgba(26,22,19,0.12)";
@@ -143,17 +153,18 @@ export default function AdminPortal() {
             Add / update groups
           </h2>
           <p style={{ fontSize: "0.85rem", color: MUTED, margin: "0 0 1rem", lineHeight: 1.6 }}>
-            Paste CSV rows with two columns: <code>names, phones</code>. Each cell is a list separated by{" "}
-            <code>;</code> or <code>|</code>. The number of names sets the group&apos;s max party size. Any phone can
-            claim the invite. Re-uploading matches by shared phone (claims &amp; RSVPs preserved). Bare 10-digit numbers
-            treated as US; prefix India with <code>+91</code>.
+            Paste CSV rows with three columns: <code>names, phones, group</code>. Names and phones are lists separated
+            by <code>;</code> or <code>|</code>. Group must be one of:{" "}
+            <code>Core</code>, <code>Nikki Fam Friends</code>, <code>Nikki Friends</code>, <code>Nick Fam</code>,{" "}
+            <code>Nick Friends</code>. The number of names sets the max party size. Re-uploading matches by shared phone
+            (claims &amp; RSVPs preserved). Bare 10-digit numbers treated as US; prefix India with <code>+91</code>.
           </p>
           <form onSubmit={upload}>
             <textarea
               value={csv}
               onChange={(e) => setCsv(e.target.value)}
               rows={5}
-              placeholder={`"Nick Tekwani; Nikki; Mom", "+1 513 555 0142; +1 513 555 0143"\n"Alex Doe", "513-555-0199"`}
+              placeholder={`"Nick Tekwani; Nikki; Mom", "+1 513 555 0142; +1 513 555 0143", "Core"\n"Alex Doe", "513-555-0199", "Nick Friends"`}
               style={{
                 width: "100%",
                 border: BORDER,
@@ -260,6 +271,7 @@ export default function AdminPortal() {
                   <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ accentColor: STAR }} />
                 </Th>
                 <Th>Invited</Th>
+                <Th>Group</Th>
                 <Th>Phones</Th>
                 <Th>Max</Th>
                 <Th>Claimed by</Th>
@@ -283,6 +295,22 @@ export default function AdminPortal() {
                     <input type="checkbox" checked={selected.has(g.id)} onChange={() => toggleRow(g.id)} style={{ accentColor: STAR }} />
                   </Td>
                   <Td>{g.invitedNames.join(", ")}</Td>
+                  <Td>
+                    {g.groupLabel ? (
+                      <span style={{
+                        display: "inline-block",
+                        padding: "0.2rem 0.55rem",
+                        borderRadius: "999px",
+                        fontSize: "0.75rem",
+                        fontWeight: 500,
+                        background: GROUP_COLORS[g.groupLabel].bg,
+                        color: GROUP_COLORS[g.groupLabel].text,
+                        whiteSpace: "nowrap",
+                      }}>
+                        {g.groupLabel}
+                      </span>
+                    ) : "—"}
+                  </Td>
                   <Td style={{ fontFamily: "monospace", fontSize: "0.78rem", color: MUTED }}>
                     {g.phones.map((p) => <div key={p}>{formatPhone(p)}</div>)}
                   </Td>
@@ -309,7 +337,7 @@ export default function AdminPortal() {
               ))}
               {groups.length === 0 && (
                 <tr>
-                  <td colSpan={9} style={{ padding: "2rem", textAlign: "center", color: MUTED }}>
+                  <td colSpan={10} style={{ padding: "2rem", textAlign: "center", color: MUTED }}>
                     No groups yet. Upload some above.
                   </td>
                 </tr>

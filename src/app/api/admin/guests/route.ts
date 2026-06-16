@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db, groups, groupPhones, rsvps } from "@/db";
 import { isAdminEmail } from "@/lib/admin";
 import { normalizePhone } from "@/lib/phone";
+import { GROUP_LABELS, type GroupLabel } from "@/db/schema";
 
 async function requireAdmin() {
   const session = await auth();
@@ -37,6 +38,7 @@ export async function GET() {
       invitedNames: g.invitedNames,
       phones: phonesByGroup.get(g.id) ?? [],
       maxPartySize: g.maxPartySize,
+      groupLabel: g.groupLabel ?? null,
       claimedByEmail: g.claimedByEmail,
       claimedByPhone: g.claimedByPhone,
       attending: r?.attending ?? null,
@@ -50,10 +52,12 @@ export async function GET() {
 }
 
 /**
- * Bulk add/update invited groups from pasted CSV. Two columns per row:
- *   names, phones
- * where each cell is a list separated by ';' or '|'. For example:
- *   "Nick Tekwani; Nikki; Mom; Dad; Sis", "+1 513 555 0142; +91 98765 43210"
+ * Bulk add/update invited groups from pasted CSV. Three columns per row:
+ *   names, phones, group
+ * where names and phones are lists separated by ';' or '|', and group is one of:
+ *   Core | Nikki Fam Friends | Nikki Friends | Nick Fam | Nick Friends
+ * For example:
+ *   "Nick Tekwani; Nikki; Mom", "+1 513 555 0142; +91 98765 43210", "Core"
  *
  * The number of names sets the group's max party size. Phones are normalized to
  * E.164. Groups are matched to existing ones by any shared phone number, so
@@ -78,9 +82,19 @@ export async function POST(req: Request) {
     const cols = rows[i];
     const names = splitList(cols[0] ?? "");
     const rawPhones = splitList(cols[1] ?? "");
+    const rawLabel = (cols[2] ?? "").trim();
 
     if (names.length === 0) {
       errors.push(`Line ${lineNo}: no names listed.`);
+      continue;
+    }
+
+    const groupLabel: GroupLabel | null = GROUP_LABELS.includes(rawLabel as GroupLabel)
+      ? (rawLabel as GroupLabel)
+      : null;
+
+    if (rawLabel && !groupLabel) {
+      errors.push(`Line ${lineNo} (${names[0]}): unknown group "${rawLabel}". Valid: ${GROUP_LABELS.join(", ")}.`);
       continue;
     }
 
@@ -121,7 +135,7 @@ export async function POST(req: Request) {
       const groupId = existingGroupIds[0];
       await db
         .update(groups)
-        .set({ invitedNames: names, maxPartySize })
+        .set({ invitedNames: names, maxPartySize, groupLabel })
         .where(eq(groups.id, groupId));
 
       const have = new Set(existing.map((e) => e.phone));
@@ -136,7 +150,7 @@ export async function POST(req: Request) {
       // Brand-new group.
       const [g] = await db
         .insert(groups)
-        .values({ invitedNames: names, maxPartySize })
+        .values({ invitedNames: names, maxPartySize, groupLabel })
         .returning({ id: groups.id });
       await db
         .insert(groupPhones)
@@ -168,7 +182,7 @@ function parseCsv(text: string): string[][] {
 
   // Drop a header row if the first cell looks like a column label.
   const first = rows[0].map((c) => c.toLowerCase());
-  if (first.some((c) => c.includes("name") || c.includes("phone"))) {
+  if (first.some((c) => c.includes("name") || c.includes("phone") || c.includes("group"))) {
     return rows.slice(1);
   }
   return rows;
