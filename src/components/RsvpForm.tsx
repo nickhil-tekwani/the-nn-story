@@ -129,7 +129,7 @@ export default function RsvpForm({
         <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
           Will you be joining us?
         </legend>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", width: "100%" }}>
           <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); }}>
             Joyfully accept
           </Toggle>
