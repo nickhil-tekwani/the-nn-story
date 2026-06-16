@@ -34,6 +34,24 @@ const INK = "var(--ink-warm)";
 const PAPER = "var(--paper)";
 const STAR = "#c1121f";
 
+type SortDir = "asc" | "desc";
+
+const LAST = "￿"; // sorts after everything alphabetically — used for nulls in asc
+
+function getSortValue(g: GroupRow, col: string): string | number {
+  switch (col) {
+    case "invited":   return g.invitedNames.join(", ").toLowerCase();
+    case "group":     return g.groupLabel?.toLowerCase() ?? LAST;
+    case "phones":    return g.phones.join(", ").toLowerCase();
+    case "max":       return g.maxPartySize;
+    case "claimed":   return g.claimedByEmail?.toLowerCase() ?? LAST;
+    case "rsvp":      return g.attending == null ? LAST : g.attending ? "a" : "b";
+    case "attendees": return g.partySize ?? -1;
+    case "hotel":     return g.attending ? (g.needsHotel ? "a" : "b") : LAST;
+    default:          return "";
+  }
+}
+
 export default function AdminPortal() {
   const [groups, setGroups] = useState<GroupRow[]>([]);
   const [csv, setCsv] = useState("");
@@ -41,6 +59,9 @@ export default function AdminPortal() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/guests");
@@ -52,6 +73,35 @@ export default function AdminPortal() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Derived: sort then filter (no useMemo needed — admin table is small)
+  const sortedGroups = sortCol == null ? groups : [...groups].sort((a, b) => {
+    const av = getSortValue(a, sortCol);
+    const bv = getSortValue(b, sortCol);
+    const cmp = typeof av === "number" && typeof bv === "number"
+      ? av - bv
+      : String(av).localeCompare(String(bv));
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
+  const q = search.trim().toLowerCase();
+  const filteredGroups = q === "" ? sortedGroups : sortedGroups.filter((g) =>
+    [
+      g.invitedNames.join(" "),
+      g.groupLabel ?? "",
+      g.phones.join(" "),
+      g.claimedByEmail ?? "",
+      g.claimedByPhone ?? "",
+      g.partyMembers.join(" "),
+      g.attending == null ? "" : g.attending ? "yes" : "no",
+    ].some((s) => s.toLowerCase().includes(q))
+  );
+
+  const allSelected = filteredGroups.length > 0 && filteredGroups.every((g) => selected.has(g.id));
+  const someSelected = selected.size > 0;
+  const attendingCount = groups
+    .filter((g) => g.attending)
+    .reduce((sum, g) => sum + (g.partySize ?? 0), 0);
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -95,9 +145,14 @@ export default function AdminPortal() {
   }
 
   function toggleAll() {
-    setSelected((prev) =>
-      prev.size === groups.length ? new Set() : new Set(groups.map((g) => g.id)),
-    );
+    const ids = filteredGroups.map((g) => g.id);
+    setSelected((prev) => {
+      const allChecked = ids.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allChecked) ids.forEach((id) => next.delete(id));
+      else ids.forEach((id) => next.add(id));
+      return next;
+    });
   }
 
   async function bulkAction(method: "DELETE" | "PATCH") {
@@ -110,11 +165,14 @@ export default function AdminPortal() {
     }
   }
 
-  const allSelected = groups.length > 0 && selected.size === groups.length;
-  const someSelected = selected.size > 0;
-  const attendingCount = groups
-    .filter((g) => g.attending)
-    .reduce((sum, g) => sum + (g.partySize ?? 0), 0);
+  function handleSort(col: string) {
+    if (sortCol === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+  }
 
   return (
     <main
@@ -216,11 +274,30 @@ export default function AdminPortal() {
           </form>
         </section>
 
-        {/* Summary */}
-        <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.85rem", color: MUTED, marginBottom: "0.75rem" }}>
-          <span>{groups.length} invited groups</span>
-          <span>{groups.filter((g) => g.claimedByEmail).length} verified</span>
-          <span>{attendingCount} attending</span>
+        {/* Summary + Search */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", gap: "1rem", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.85rem", color: MUTED }}>
+            <span>{groups.length} invited groups</span>
+            <span>{groups.filter((g) => g.claimedByEmail).length} verified</span>
+            <span>{attendingCount} attending</span>
+          </div>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search…"
+            style={{
+              border: BORDER,
+              borderRadius: "999px",
+              background: PAPER,
+              padding: "0.4rem 0.9rem",
+              fontFamily: "var(--font-pt), serif",
+              fontSize: "0.82rem",
+              color: INK,
+              outline: "none",
+              minWidth: "14rem",
+            }}
+          />
         </div>
 
         {/* Bulk bar */}
@@ -270,19 +347,19 @@ export default function AdminPortal() {
                 <Th>
                   <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ accentColor: STAR }} />
                 </Th>
-                <Th>Invited</Th>
-                <Th>Group</Th>
-                <Th>Phones</Th>
-                <Th>Max</Th>
-                <Th>Claimed by</Th>
-                <Th>RSVP</Th>
-                <Th>Attendees</Th>
-                <Th>Hotel</Th>
+                <Th sortKey="invited"   sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Invited</Th>
+                <Th sortKey="group"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Group</Th>
+                <Th sortKey="phones"    sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Phones</Th>
+                <Th sortKey="max"       sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Max</Th>
+                <Th sortKey="claimed"   sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Claimed by</Th>
+                <Th sortKey="rsvp"      sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>RSVP</Th>
+                <Th sortKey="attendees" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Attendees</Th>
+                <Th sortKey="hotel"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Hotel</Th>
                 <Th></Th>
               </tr>
             </thead>
             <tbody>
-              {groups.map((g) => (
+              {filteredGroups.map((g) => (
                 <tr
                   key={g.id}
                   style={{
@@ -335,10 +412,10 @@ export default function AdminPortal() {
                   </Td>
                 </tr>
               ))}
-              {groups.length === 0 && (
+              {filteredGroups.length === 0 && (
                 <tr>
                   <td colSpan={10} style={{ padding: "2rem", textAlign: "center", color: MUTED }}>
-                    No groups yet. Upload some above.
+                    {groups.length === 0 ? "No groups yet. Upload some above." : "No results match your search."}
                   </td>
                 </tr>
               )}
@@ -350,10 +427,43 @@ export default function AdminPortal() {
   );
 }
 
-function Th({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) {
+function Th({
+  children,
+  style,
+  sortKey,
+  sortCol,
+  sortDir,
+  onSort,
+}: {
+  children?: React.ReactNode;
+  style?: React.CSSProperties;
+  sortKey?: string;
+  sortCol?: string | null;
+  sortDir?: SortDir;
+  onSort?: (key: string) => void;
+}) {
+  const active = sortKey != null && sortCol === sortKey;
   return (
-    <th style={{ padding: "0.65rem 1rem", color: "var(--ink-muted)", fontWeight: 500, fontSize: "0.78rem", letterSpacing: "0.04em", whiteSpace: "nowrap", ...style }}>
+    <th
+      onClick={sortKey ? () => onSort?.(sortKey) : undefined}
+      style={{
+        padding: "0.65rem 1rem",
+        color: active ? INK : MUTED,
+        fontWeight: 500,
+        fontSize: "0.78rem",
+        letterSpacing: "0.04em",
+        whiteSpace: "nowrap",
+        cursor: sortKey ? "pointer" : "default",
+        userSelect: sortKey ? "none" : undefined,
+        ...style,
+      }}
+    >
       {children}
+      {sortKey && (
+        <span style={{ marginLeft: "0.3rem", opacity: active ? 1 : 0.35, fontSize: "0.7rem" }}>
+          {active ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+        </span>
+      )}
     </th>
   );
 }
