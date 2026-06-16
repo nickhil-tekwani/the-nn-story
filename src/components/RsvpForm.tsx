@@ -194,7 +194,7 @@ export default function RsvpForm({
                           <button
                             type="button"
                             onClick={() => selectAll(i)}
-                            style={{ fontSize: "0.68rem", color: "var(--ink-muted)", background: "none", border: "none", cursor: "pointer", padding: "0.1rem 0", fontFamily: "var(--font-pt), serif", letterSpacing: "0.04em" }}
+                            className="dietary-all-btn"
                           >
                             {PROTEINS.every((p) => dietary[i][p.key]) ? "none" : "all"}
                           </button>

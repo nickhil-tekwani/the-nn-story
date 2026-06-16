@@ -99,3 +99,20 @@ body {
   -webkit-backdrop-filter: blur(3px);
   background: rgba(0, 0, 0, 0.45);
 }
+
+.dietary-all-btn {
+  font-size: 0.68rem;
+  font-family: var(--font-pt), serif;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  background: none;
+  border: 1px solid rgba(26, 22, 19, 0.18);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.dietary-all-btn:hover {
+  opacity: 0.45;
+}
