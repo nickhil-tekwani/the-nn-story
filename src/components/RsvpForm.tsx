@@ -426,7 +426,7 @@ export default function RsvpForm({
               fontFamily: "var(--font-pt), serif",
               fontSize: "0.9rem",
               cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
+              opacity: loading ? 0.6 : undefined,
               transition: "all 0.25s ease",
             }}
           >
@@ -472,7 +472,7 @@ export default function RsvpForm({
             </div>
           )}
         </>
-      ) : (
+      ) : saved ? null : (
         <div style={{
           borderRadius: "0.75rem",
           border: "1px solid rgba(26,22,19,0.12)",
@@ -503,7 +503,7 @@ export default function RsvpForm({
               fontFamily: "var(--font-pt), serif",
               fontSize: "0.9rem",
               cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
+              opacity: loading ? 0.6 : undefined,
               transition: "opacity 0.2s ease",
             }}
           >
