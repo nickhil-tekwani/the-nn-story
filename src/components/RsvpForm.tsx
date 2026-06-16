@@ -253,23 +253,28 @@ export default function RsvpForm({
 
   return (
     <>
-      {displayedRsvp !== null && (
-        <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
-          <span style={{
-            display: "inline-block",
-            padding: "0.2rem 0.8rem",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            letterSpacing: "0.03em",
-            background: displayedRsvp.attending ? "rgba(45,106,79,0.1)" : "rgba(26,22,19,0.06)",
-            color: displayedRsvp.attending ? "#2d6a4f" : "var(--ink-muted)",
-          }}>
-            {displayedRsvp.attending
-              ? `${displayedRsvp.partySize}/${maxPartySize} yes`
-              : `0/${maxPartySize} no`}
-          </span>
-        </div>
-      )}
+      {displayedRsvp !== null && (() => {
+        const ps = displayedRsvp.partySize;
+        const full = ps === maxPartySize;
+        const none = ps === 0;
+        const bg    = none ? "rgba(155,28,28,0.1)"  : full ? "rgba(45,106,79,0.1)"  : "rgba(146,64,14,0.1)";
+        const color = none ? "#9b1c1c"               : full ? "#2d6a4f"              : "#92400e";
+        return (
+          <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
+            <span style={{
+              display: "inline-block",
+              padding: "0.2rem 0.8rem",
+              borderRadius: "999px",
+              fontSize: "0.78rem",
+              letterSpacing: "0.03em",
+              background: bg,
+              color,
+            }}>
+              {`${ps}/${maxPartySize} attending`}
+            </span>
+          </div>
+        );
+      })()}
     <form onSubmit={handleSubmitClick} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* Accept / decline */}
