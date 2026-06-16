@@ -80,6 +80,16 @@ export default function RsvpForm({
     setSaved(false);
   }
 
+  function selectAll(guestIdx: number) {
+    const allChecked = PROTEINS.every((p) => dietary[guestIdx][p.key]);
+    setDietary((prev) => prev.map((d, i) => {
+      if (i !== guestIdx) return d;
+      const toggled = Object.fromEntries(PROTEINS.map((p) => [p.key, !allChecked]));
+      return { ...d, ...toggled };
+    }));
+    setSaved(false);
+  }
+
   function onNameChange(index: number, value: string) {
     setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
     setSaved(false);
@@ -180,6 +190,15 @@ export default function RsvpForm({
                     {names.map((n, i) => (
                       <th key={i} style={{ textAlign: "center", padding: "0.4rem 0.75rem", color: "var(--ink-warm)", fontWeight: 500, whiteSpace: "nowrap", minWidth: "5rem" }}>
                         {n.trim() || `Guest ${i + 1}`}
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => selectAll(i)}
+                            style={{ fontSize: "0.68rem", color: "var(--ink-muted)", background: "none", border: "none", cursor: "pointer", padding: "0.1rem 0", fontFamily: "var(--font-pt), serif", letterSpacing: "0.04em" }}
+                          >
+                            {PROTEINS.every((p) => dietary[i][p.key]) ? "none" : "all"}
+                          </button>
+                        </div>
                       </th>
                     ))}
                   </tr>
