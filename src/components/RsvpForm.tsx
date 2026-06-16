@@ -166,9 +166,12 @@ export default function RsvpForm({
           </fieldset>
 
           <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-            <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
+            <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.25rem", display: "block" }}>
               Dietary preferences
             </legend>
+            <p style={{ fontSize: "0.78rem", color: "var(--ink-muted)", margin: "0 0 0.75rem", lineHeight: 1.5 }}>
+              Check the items each person eats.
+            </p>
             <div style={{ overflowX: "auto" }}>
               <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.82rem" }}>
                 <thead>

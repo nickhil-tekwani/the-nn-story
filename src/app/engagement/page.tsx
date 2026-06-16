@@ -57,7 +57,7 @@ export default async function EngagementPage() {
           boxShadow: "0 20px 60px rgba(26,22,19,0.35)",
           padding: "clamp(2rem, 6vw, 3rem) clamp(1.5rem, 5vw, 2.5rem)",
           width: "100%",
-          maxWidth: "26rem",
+          maxWidth: "36rem",
           color: "var(--ink-warm)",
           fontFamily: "var(--font-pt), Georgia, serif",
           WebkitFontSmoothing: "antialiased",
