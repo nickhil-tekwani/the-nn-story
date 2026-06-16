@@ -1,10 +1,20 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import RotatingBackground from "@/components/RotatingBackground";
 import { SignInButton, SignOutButton } from "@/components/AuthButtons";
 import PhoneClaim from "@/components/PhoneClaim";
 import RsvpForm from "@/components/RsvpForm";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
+
+export const metadata: Metadata = {
+  openGraph: {
+    title: "Nickhil ♥ Nikki — You're Invited!",
+  },
+  twitter: {
+    title: "Nickhil ♥ Nikki — You're Invited!",
+  },
+};
 
 const STAR = <span style={{ color: "var(--star)" }}>★</span>;
 
