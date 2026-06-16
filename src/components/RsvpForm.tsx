@@ -68,6 +68,11 @@ function buildGuests(invitedNames: string[], maxPartySize: number, initial: Init
     }
   }
 
+  // First load with no prior RSVP — default the first guest to attending.
+  if (!initial && guests.length > 0) {
+    guests[0].attending = true;
+  }
+
   return guests;
 }
 
@@ -104,6 +109,7 @@ export default function RsvpForm({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<boolean>(Boolean(initial));
   const [loading, setLoading] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
 
   // Attending guests with their index into the full guests/dietary arrays.
   const attendingGuests = guests
@@ -113,6 +119,7 @@ export default function RsvpForm({
   function toggleGuest(guestIdx: number, checked: boolean) {
     setGuests((prev) => prev.map((g, i) => (i === guestIdx ? { ...g, attending: checked } : g)));
     setSaved(false);
+    setConfirmPending(false);
   }
 
   function startEditing(guestIdx: number) {
@@ -167,40 +174,37 @@ export default function RsvpForm({
     setSaved(false);
   }
 
-  async function submit(e: React.FormEvent) {
+  function validate(): string | null {
+    if (!attending) return null;
+    if (attendingGuests.length === 0) return "Please check at least one attending guest.";
+    if (attendingGuests.some((g) => !g.name.trim())) return "Please enter a name for all attending guests.";
+    return null;
+  }
+
+  function handleSubmitClick(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
+    const err = validate();
+    if (err) { setError(err); return; }
+    // Declining goes straight through — no ambiguity to confirm.
+    if (!attending) { doSend(); return; }
+    setConfirmPending(true);
+  }
 
-    if (attending) {
-      if (attendingGuests.length === 0) {
-        setError("Please check at least one attending guest.");
-        return;
-      }
-      if (attendingGuests.some((g) => !g.name.trim())) {
-        setError("Please enter a name for all attending guests.");
-        return;
-      }
-    }
-
+  async function doSend() {
     const partySize = attending ? attendingGuests.length : 0;
     const partyMembers = attending ? attendingGuests.map((g) => g.name.trim()) : [];
     const dietaryRestrictions = attending ? attendingGuests.map((g) => dietary[g.idx]) : [];
     const allNames = guests.map((g) => g.name.trim()).filter(Boolean);
 
     setLoading(true);
+    setConfirmPending(false);
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attending,
-          needsHotel,
-          partySize,
-          partyMembers,
-          dietaryRestrictions,
-          invitedNames: allNames,
-        }),
+        body: JSON.stringify({ attending, needsHotel, partySize, partyMembers, dietaryRestrictions, invitedNames: allNames }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
@@ -222,7 +226,7 @@ export default function RsvpForm({
   };
 
   return (
-    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <form onSubmit={handleSubmitClick} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* Accept / decline */}
       <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
@@ -379,19 +383,58 @@ export default function RsvpForm({
         style={{
           width: "100%",
           borderRadius: "999px",
-          background: "var(--ink-warm)",
-          color: "var(--paper)",
-          border: "none",
+          background: confirmPending ? "transparent" : "var(--ink-warm)",
+          color: confirmPending ? "var(--ink-muted)" : "var(--paper)",
+          border: confirmPending ? "1px solid rgba(26,22,19,0.2)" : "none",
           padding: "0.75rem 1.5rem",
           fontFamily: "var(--font-pt), serif",
           fontSize: "0.9rem",
           cursor: loading ? "not-allowed" : "pointer",
           opacity: loading ? 0.6 : 1,
-          transition: "opacity 0.2s ease",
+          transition: "all 0.25s ease",
         }}
       >
-        {loading ? "Saving…" : saved ? "Update RSVP" : "Send RSVP"}
+        {loading ? "Saving…" : confirmPending ? "Edit" : saved ? "Update RSVP" : "Send RSVP"}
       </button>
+
+      {confirmPending && (
+        <div style={{
+          borderRadius: "0.75rem",
+          border: "1px solid rgba(26,22,19,0.12)",
+          padding: "1rem 1.1rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.75rem",
+          animation: "fadeSlideIn 0.2s ease forwards",
+        }}>
+          <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ink-mid)", lineHeight: 1.55 }}>
+            <strong style={{ color: "var(--ink-warm)", fontWeight: 600 }}>
+              {attendingGuests.length}/{guests.length}
+            </strong>{" "}
+            {attendingGuests.length === 1 ? "person" : "people"} in your party{" "}
+            {attendingGuests.length === 1 ? "is" : "are"} going to be marked as coming.
+            Please confirm this is correct before submitting.
+          </p>
+          <button
+            type="button"
+            onClick={doSend}
+            style={{
+              width: "100%",
+              borderRadius: "999px",
+              background: "var(--ink-warm)",
+              color: "var(--paper)",
+              border: "none",
+              padding: "0.7rem 1.5rem",
+              fontFamily: "var(--font-pt), serif",
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            Confirm &amp; Send
+          </button>
+        </div>
+      )}
     </form>
   );
 }
