@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { db, rsvps } from "@/db";
+import { db, groups, rsvps } from "@/db";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
 import type { DietaryInfo } from "@/db/schema";
 
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const attending = Boolean(body?.attending);
   const needsHotel = Boolean(body?.needsHotel);
+  const rawInvitedNames: unknown = body?.invitedNames;
   const partySize = Number(body?.partySize);
   const rawMembers: unknown = body?.partyMembers;
   const rawDietary: unknown = body?.dietaryRestrictions;
@@ -116,6 +118,19 @@ export async function POST(req: Request) {
         updatedAt: values.updatedAt,
       },
     });
+
+  // Persist any name edits back to the group's invited list.
+  if (Array.isArray(rawInvitedNames)) {
+    const updatedNames = rawInvitedNames
+      .map((n) => String(n ?? "").trim())
+      .filter(Boolean);
+    if (updatedNames.length > 0) {
+      await db
+        .update(groups)
+        .set({ invitedNames: updatedNames })
+        .where(eq(groups.id, group.id));
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

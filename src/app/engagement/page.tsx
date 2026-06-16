@@ -139,6 +139,7 @@ export default async function EngagementPage() {
           <Welcome
             firstName={session.user?.name?.split(" ")[0] ?? null}
             maxPartySize={group.maxPartySize}
+            invitedNames={group.invitedNames}
             groupLabel={group.groupLabel}
             rsvp={rsvp}
           />
@@ -168,11 +169,13 @@ function SignedOut() {
 function Welcome({
   firstName,
   maxPartySize,
+  invitedNames,
   groupLabel,
   rsvp,
 }: {
   firstName: string | null;
   maxPartySize: number;
+  invitedNames: string[];
   groupLabel: GroupLabel | null | undefined;
   rsvp: {
     attending: boolean;
@@ -193,7 +196,7 @@ function Welcome({
       >
         Welcome{firstName ? `, ${firstName}` : ""} — we can&apos;t wait to celebrate with you.
       </p>
-      <RsvpForm maxPartySize={maxPartySize} groupLabel={groupLabel} initial={rsvp} />
+      <RsvpForm maxPartySize={maxPartySize} invitedNames={invitedNames} groupLabel={groupLabel} initial={rsvp} />
     </div>
   );
 }
