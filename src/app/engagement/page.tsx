@@ -186,21 +186,6 @@ function Welcome({
 }) {
   return (
     <div>
-      {rsvp !== null && (
-        <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
-          <span style={{
-            display: "inline-block",
-            padding: "0.2rem 0.8rem",
-            borderRadius: "999px",
-            fontSize: "0.78rem",
-            letterSpacing: "0.03em",
-            background: rsvp.attending ? "rgba(45,106,79,0.1)" : "rgba(26,22,19,0.06)",
-            color: rsvp.attending ? "#2d6a4f" : "var(--ink-muted)",
-          }}>
-            {rsvp.attending ? `${rsvp.partySize}/${maxPartySize} yes` : `0/${maxPartySize} no`}
-          </span>
-        </div>
-      )}
       <p
         style={{
           fontSize: "0.9rem",

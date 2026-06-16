@@ -113,6 +113,9 @@ export default function RsvpForm({
   const [saved, setSaved] = useState<boolean>(Boolean(initial));
   const [loading, setLoading] = useState(false);
   const [confirmPending, setConfirmPending] = useState(false);
+  const [displayedRsvp, setDisplayedRsvp] = useState<{ attending: boolean; partySize: number } | null>(
+    initial ? { attending: initial.attending, partySize: initial.partySize } : null
+  );
 
   // Attending guests with their index into the full guests/dietary arrays.
   const attendingGuests = guests
@@ -231,6 +234,7 @@ export default function RsvpForm({
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
       setSaved(true);
+      setDisplayedRsvp({ attending, partySize });
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -248,6 +252,24 @@ export default function RsvpForm({
   };
 
   return (
+    <>
+      {displayedRsvp !== null && (
+        <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
+          <span style={{
+            display: "inline-block",
+            padding: "0.2rem 0.8rem",
+            borderRadius: "999px",
+            fontSize: "0.78rem",
+            letterSpacing: "0.03em",
+            background: displayedRsvp.attending ? "rgba(45,106,79,0.1)" : "rgba(26,22,19,0.06)",
+            color: displayedRsvp.attending ? "#2d6a4f" : "var(--ink-muted)",
+          }}>
+            {displayedRsvp.attending
+              ? `${displayedRsvp.partySize}/${maxPartySize} yes`
+              : `0/${maxPartySize} no`}
+          </span>
+        </div>
+      )}
     <form onSubmit={handleSubmitClick} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* Accept / decline */}
@@ -512,6 +534,7 @@ export default function RsvpForm({
         </div>
       )}
     </form>
+    </>
   );
 }
 
