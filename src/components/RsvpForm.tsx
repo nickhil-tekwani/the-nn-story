@@ -337,8 +337,8 @@ export default function RsvpForm({
               <p style={{ fontSize: "0.78rem", color: "var(--ink-muted)", margin: "0 0 0.75rem", lineHeight: 1.5 }}>
                 Check the items each person eats.
               </p>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.82rem" }}>
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"] }}>
+                <table style={{ borderCollapse: "collapse", minWidth: "100%", fontSize: "0.82rem" }}>
                   <thead>
                     <tr>
                       <th style={{ textAlign: "left", padding: "0.4rem 0.75rem 0.4rem 0", color: "var(--ink-muted)", fontWeight: 500, whiteSpace: "nowrap" }} />
