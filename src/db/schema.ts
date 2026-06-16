@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -8,6 +9,16 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
+
+export type DietaryInfo = {
+  chicken: boolean;
+  turkey: boolean;
+  beef: boolean;
+  pork: boolean;
+  fish: boolean;
+  egg: boolean;
+  allergies: string;
+};
 
 /**
  * An invited group (household, friend group, or a single individual). One row
@@ -83,6 +94,7 @@ export const rsvps = pgTable(
     needsHotel: boolean("needs_hotel").notNull().default(false),
     partySize: integer("party_size").notNull(),
     partyMembers: text("party_members").array().notNull().default([]),
+    dietaryRestrictions: jsonb("dietary_restrictions").$type<DietaryInfo[]>().notNull().default([]),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

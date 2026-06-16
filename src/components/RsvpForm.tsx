@@ -1,13 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import type { DietaryInfo } from "@/db/schema";
 
 type InitialRsvp = {
   attending: boolean;
   needsHotel: boolean;
   partySize: number;
   partyMembers: string[];
+  dietaryRestrictions?: DietaryInfo[];
 } | null;
+
+const PROTEINS: { key: keyof Omit<DietaryInfo, "allergies">; label: string }[] = [
+  { key: "chicken", label: "Chicken" },
+  { key: "turkey",  label: "Turkey"  },
+  { key: "beef",    label: "Beef"    },
+  { key: "pork",    label: "Pork"    },
+  { key: "fish",    label: "Fish"    },
+  { key: "egg",     label: "Egg"     },
+];
+
+function emptyDiet(): DietaryInfo {
+  return { chicken: false, turkey: false, beef: false, pork: false, fish: false, egg: false, allergies: "" };
+}
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -39,6 +54,11 @@ export default function RsvpForm({
     const size = initial?.partySize && initial.partySize > 0 ? initial.partySize : 1;
     return Array.from({ length: size }, (_, i) => start[i] ?? "");
   });
+  const [dietary, setDietary] = useState<DietaryInfo[]>(() => {
+    const start = initial?.dietaryRestrictions ?? [];
+    const size = initial?.partySize && initial.partySize > 0 ? initial.partySize : 1;
+    return Array.from({ length: size }, (_, i) => start[i] ?? emptyDiet());
+  });
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<boolean>(Boolean(initial));
   const [loading, setLoading] = useState(false);
@@ -46,6 +66,17 @@ export default function RsvpForm({
   function onPartySizeChange(size: number) {
     setPartySize(size);
     setNames((prev) => Array.from({ length: size }, (_, i) => prev[i] ?? ""));
+    setDietary((prev) => Array.from({ length: size }, (_, i) => prev[i] ?? emptyDiet()));
+    setSaved(false);
+  }
+
+  function onDietaryCheck(guestIdx: number, key: keyof Omit<DietaryInfo, "allergies">, checked: boolean) {
+    setDietary((prev) => prev.map((d, i) => i === guestIdx ? { ...d, [key]: checked } : d));
+    setSaved(false);
+  }
+
+  function onAllergies(guestIdx: number, value: string) {
+    setDietary((prev) => prev.map((d, i) => i === guestIdx ? { ...d, allergies: value } : d));
     setSaved(false);
   }
 
@@ -68,7 +99,7 @@ export default function RsvpForm({
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attending, needsHotel, partySize, partyMembers: trimmed }),
+        body: JSON.stringify({ attending, needsHotel, partySize, partyMembers: trimmed, dietaryRestrictions: dietary }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
@@ -131,6 +162,57 @@ export default function RsvpForm({
                   style={inputStyle}
                 />
               ))}
+            </div>
+          </fieldset>
+
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+            <legend style={{ fontSize: "0.7rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "0.6rem", display: "block" }}>
+              Dietary preferences
+            </legend>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.82rem" }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: "left", padding: "0.4rem 0.75rem 0.4rem 0", color: "var(--ink-muted)", fontWeight: 500, whiteSpace: "nowrap" }}></th>
+                    {names.map((n, i) => (
+                      <th key={i} style={{ textAlign: "center", padding: "0.4rem 0.75rem", color: "var(--ink-warm)", fontWeight: 500, whiteSpace: "nowrap", minWidth: "5rem" }}>
+                        {n.trim() || `Guest ${i + 1}`}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PROTEINS.map(({ key, label }) => (
+                    <tr key={key} style={{ borderTop: "1px solid rgba(26,22,19,0.08)" }}>
+                      <td style={{ padding: "0.45rem 0.75rem 0.45rem 0", color: "var(--ink-muted)", whiteSpace: "nowrap" }}>{label}</td>
+                      {dietary.map((d, i) => (
+                        <td key={i} style={{ textAlign: "center", padding: "0.45rem 0.75rem" }}>
+                          <input
+                            type="checkbox"
+                            checked={d[key]}
+                            onChange={(e) => onDietaryCheck(i, key, e.target.checked)}
+                            style={{ accentColor: "var(--ink-warm)", width: "1rem", height: "1rem", cursor: "pointer" }}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: "1px solid rgba(26,22,19,0.08)" }}>
+                    <td style={{ padding: "0.45rem 0.75rem 0.45rem 0", color: "var(--ink-muted)", whiteSpace: "nowrap" }}>Allergies / other</td>
+                    {dietary.map((d, i) => (
+                      <td key={i} style={{ padding: "0.35rem 0.5rem" }}>
+                        <input
+                          type="text"
+                          value={d.allergies}
+                          onChange={(e) => onAllergies(i, e.target.value)}
+                          placeholder="e.g. nuts"
+                          style={{ ...inputStyle, fontSize: "0.8rem", padding: "0.35rem 0.6rem", minWidth: "4.5rem" }}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </fieldset>
 

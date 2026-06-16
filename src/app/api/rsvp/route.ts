@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db, rsvps } from "@/db";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
+import type { DietaryInfo } from "@/db/schema";
 
 export async function GET() {
   const session = await auth();
@@ -34,8 +35,10 @@ export async function POST(req: Request) {
   const needsHotel = Boolean(body?.needsHotel);
   const partySize = Number(body?.partySize);
   const rawMembers: unknown = body?.partyMembers;
+  const rawDietary: unknown = body?.dietaryRestrictions;
 
   let partyMembers: string[] = [];
+  let dietaryRestrictions: DietaryInfo[] = [];
 
   if (attending) {
     if (!Number.isInteger(partySize) || partySize < 1) {
@@ -71,6 +74,21 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    // Build dietary restrictions, one entry per party member.
+    const rawArr = Array.isArray(rawDietary) ? rawDietary : [];
+    dietaryRestrictions = partyMembers.map((_, i) => {
+      const d = rawArr[i] ?? {};
+      return {
+        chicken: Boolean(d.chicken),
+        turkey:  Boolean(d.turkey),
+        beef:    Boolean(d.beef),
+        pork:    Boolean(d.pork),
+        fish:    Boolean(d.fish),
+        egg:     Boolean(d.egg),
+        allergies: String(d.allergies ?? "").trim(),
+      };
+    });
   }
 
   // Not attending → store party size of 0, no hotel, no names.
@@ -80,6 +98,7 @@ export async function POST(req: Request) {
     needsHotel: attending ? needsHotel : false,
     partySize: attending ? partySize : 0,
     partyMembers: attending ? partyMembers : [],
+    dietaryRestrictions: attending ? dietaryRestrictions : [],
     updatedAt: new Date(),
   };
 
@@ -93,6 +112,7 @@ export async function POST(req: Request) {
         needsHotel: values.needsHotel,
         partySize: values.partySize,
         partyMembers: values.partyMembers,
+        dietaryRestrictions: values.dietaryRestrictions,
         updatedAt: values.updatedAt,
       },
     });
