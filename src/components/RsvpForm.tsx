@@ -146,6 +146,11 @@ export default function RsvpForm({
                 I&apos;m local
               </Toggle>
             </div>
+            {needsHotel && (
+              <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: "0.6rem 0 0", lineHeight: 1.55 }}>
+                Plan to stay in downtown Cincinnati. Depending on out-of-town attendance, we may put together a room block — stay tuned!
+              </p>
+            )}
           </fieldset>
         </>
       )}
