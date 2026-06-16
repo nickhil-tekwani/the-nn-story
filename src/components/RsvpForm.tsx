@@ -106,6 +106,9 @@ export default function RsvpForm({
   const [dietary, setDietary] = useState<DietaryInfo[]>(() =>
     buildDietary(buildGuests(invitedNames, maxPartySize, initial), initial)
   );
+  const [vegMode, setVegMode] = useState<boolean[]>(() =>
+    buildGuests(invitedNames, maxPartySize, initial).map(() => false)
+  );
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<boolean>(Boolean(initial));
   const [loading, setLoading] = useState(false);
@@ -137,6 +140,7 @@ export default function RsvpForm({
       // Remove blank new-guest rows on blur.
       setGuests((prev) => prev.filter((_, i) => i !== guestIdx));
       setDietary((prev) => prev.filter((_, i) => i !== guestIdx));
+      setVegMode((prev) => prev.filter((_, i) => i !== guestIdx));
       return;
     }
     setGuests((prev) =>
@@ -150,6 +154,7 @@ export default function RsvpForm({
     if (guests.length >= maxPartySize) return;
     setGuests((prev) => [...prev, { name: "", attending: true, editing: true, isNew: true }]);
     setDietary((prev) => [...prev, emptyDiet()]);
+    setVegMode((prev) => [...prev, false]);
     setSaved(false);
   }
 
@@ -164,6 +169,8 @@ export default function RsvpForm({
   }
 
   function selectAll(guestIdx: number) {
+    // all/none always clears veg mode first
+    setVegMode((prev) => prev.map((v, i) => (i === guestIdx ? false : v)));
     const allChecked = PROTEINS.every((p) => dietary[guestIdx][p.key]);
     setDietary((prev) =>
       prev.map((d, i) => {
@@ -171,6 +178,22 @@ export default function RsvpForm({
         return { ...d, ...Object.fromEntries(PROTEINS.map((p) => [p.key, !allChecked])) };
       })
     );
+    setSaved(false);
+  }
+
+  function toggleVeg(guestIdx: number) {
+    const turningOn = !vegMode[guestIdx];
+    setVegMode((prev) => prev.map((v, i) => (i === guestIdx ? !v : v)));
+    if (turningOn) {
+      // Uncheck all non-egg proteins
+      setDietary((prev) =>
+        prev.map((d, i) =>
+          i === guestIdx
+            ? { ...d, chicken: false, turkey: false, beef: false, pork: false, fish: false }
+            : d
+        )
+      );
+    }
     setSaved(false);
   }
 
@@ -296,13 +319,21 @@ export default function RsvpForm({
                       {attendingGuests.map((g, col) => (
                         <th key={col} style={{ textAlign: "center", padding: "0.4rem 0.75rem", color: "var(--ink-warm)", fontWeight: 500, whiteSpace: "nowrap", minWidth: "5rem" }}>
                           {g.name.trim() || "Guest"}
-                          <div>
+                          <div style={{ display: "flex", gap: "0.25rem", justifyContent: "center", marginTop: "0.2rem" }}>
                             <button
                               type="button"
                               onClick={() => selectAll(g.idx)}
                               className="dietary-all-btn"
                             >
                               {PROTEINS.every((p) => dietary[g.idx][p.key]) ? "none" : "all"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleVeg(g.idx)}
+                              className="dietary-all-btn"
+                              style={vegMode[g.idx] ? { borderColor: "#2d6a4f", color: "#2d6a4f" } : {}}
+                            >
+                              veg
                             </button>
                           </div>
                         </th>
@@ -315,16 +346,20 @@ export default function RsvpForm({
                         <td style={{ padding: "0.45rem 0.75rem 0.45rem 0", color: "var(--ink-muted)", whiteSpace: "nowrap" }}>
                           {label}
                         </td>
-                        {attendingGuests.map((g, col) => (
-                          <td key={col} style={{ textAlign: "center", padding: "0.45rem 0.75rem" }}>
-                            <input
-                              type="checkbox"
-                              checked={dietary[g.idx][key]}
-                              onChange={(e) => onDietaryCheck(g.idx, key, e.target.checked)}
-                              style={{ accentColor: "var(--ink-warm)", width: "1rem", height: "1rem", cursor: "pointer" }}
-                            />
-                          </td>
-                        ))}
+                        {attendingGuests.map((g, col) => {
+                          const grayed = vegMode[g.idx] && key !== "egg";
+                          return (
+                            <td key={col} style={{ textAlign: "center", padding: "0.45rem 0.75rem", opacity: grayed ? 0.25 : 1, transition: "opacity 0.2s ease" }}>
+                              <input
+                                type="checkbox"
+                                checked={dietary[g.idx][key]}
+                                disabled={grayed}
+                                onChange={(e) => onDietaryCheck(g.idx, key, e.target.checked)}
+                                style={{ accentColor: "var(--ink-warm)", width: "1rem", height: "1rem", cursor: grayed ? "default" : "pointer" }}
+                              />
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                     <tr style={{ borderTop: "1px solid rgba(26,22,19,0.08)" }}>
