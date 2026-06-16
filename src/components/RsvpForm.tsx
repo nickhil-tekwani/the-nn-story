@@ -206,12 +206,11 @@ export default function RsvpForm({
 
   function handleSubmitClick(e: React.FormEvent) {
     e.preventDefault();
+    if (!attending) return; // decline is handled by the inline confirm box
     setError(null);
     setSaved(false);
     const err = validate();
     if (err) { setError(err); return; }
-    // Declining goes straight through — no ambiguity to confirm.
-    if (!attending) { doSend(); return; }
     setConfirmPending(true);
   }
 
@@ -255,10 +254,10 @@ export default function RsvpForm({
       <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
         <legend style={legendStyle}>Will you be joining us?</legend>
         <div style={{ display: "flex", gap: "0.5rem", width: "100%" }}>
-          <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); }}>
+          <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); setConfirmPending(false); }}>
             Joyfully accept
           </Toggle>
-          <Toggle active={!attending} onClick={() => { setAttending(false); setSaved(false); }}>
+          <Toggle active={!attending} onClick={() => { setAttending(false); setSaved(false); setConfirmPending(false); }}>
             Regretfully decline
           </Toggle>
         </div>
@@ -412,27 +411,68 @@ export default function RsvpForm({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          width: "100%",
-          borderRadius: "999px",
-          background: confirmPending ? "transparent" : "var(--ink-warm)",
-          color: confirmPending ? "var(--ink-muted)" : "var(--paper)",
-          border: confirmPending ? "1px solid rgba(26,22,19,0.2)" : "none",
-          padding: "0.75rem 1.5rem",
-          fontFamily: "var(--font-pt), serif",
-          fontSize: "0.9rem",
-          cursor: loading ? "not-allowed" : "pointer",
-          opacity: loading ? 0.6 : 1,
-          transition: "all 0.25s ease",
-        }}
-      >
-        {loading ? "Saving…" : confirmPending ? "Edit" : saved ? "Update RSVP" : "Send RSVP"}
-      </button>
+      {attending ? (
+        <>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              borderRadius: "999px",
+              background: confirmPending ? "transparent" : "var(--ink-warm)",
+              color: confirmPending ? "var(--ink-muted)" : "var(--paper)",
+              border: confirmPending ? "1px solid rgba(26,22,19,0.2)" : "none",
+              padding: "0.75rem 1.5rem",
+              fontFamily: "var(--font-pt), serif",
+              fontSize: "0.9rem",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.6 : 1,
+              transition: "all 0.25s ease",
+            }}
+          >
+            {loading ? "Saving…" : confirmPending ? "Edit" : saved ? "Update RSVP" : "Send RSVP"}
+          </button>
 
-      {confirmPending && (
+          {confirmPending && (
+            <div style={{
+              borderRadius: "0.75rem",
+              border: "1px solid rgba(26,22,19,0.12)",
+              padding: "1rem 1.1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem",
+              animation: "fadeSlideIn 0.2s ease forwards",
+            }}>
+              <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ink-mid)", lineHeight: 1.55 }}>
+                <strong style={{ color: "var(--ink-warm)", fontWeight: 600 }}>
+                  {attendingGuests.length}/{guests.length}
+                </strong>{" "}
+                {attendingGuests.length === 1 ? "person" : "people"} in your party{" "}
+                {attendingGuests.length === 1 ? "is" : "are"} going to be marked as coming.
+                Please confirm this is correct before submitting.
+              </p>
+              <button
+                type="button"
+                onClick={doSend}
+                style={{
+                  width: "100%",
+                  borderRadius: "999px",
+                  background: "var(--ink-warm)",
+                  color: "var(--paper)",
+                  border: "none",
+                  padding: "0.7rem 1.5rem",
+                  fontFamily: "var(--font-pt), serif",
+                  fontSize: "0.9rem",
+                  cursor: "pointer",
+                  transition: "opacity 0.2s ease",
+                }}
+              >
+                Confirm &amp; Send
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
         <div style={{
           borderRadius: "0.75rem",
           border: "1px solid rgba(26,22,19,0.12)",
@@ -443,16 +483,16 @@ export default function RsvpForm({
           animation: "fadeSlideIn 0.2s ease forwards",
         }}>
           <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ink-mid)", lineHeight: 1.55 }}>
-            <strong style={{ color: "var(--ink-warm)", fontWeight: 600 }}>
-              {attendingGuests.length}/{guests.length}
-            </strong>{" "}
-            {attendingGuests.length === 1 ? "person" : "people"} in your party{" "}
-            {attendingGuests.length === 1 ? "is" : "are"} going to be marked as coming.
-            Please confirm this is correct before submitting.
+            Declining will RSVP no for all members of your party
+            {guests.filter((g) => g.name.trim()).length > 0
+              ? `: ${guests.map((g) => g.name.trim()).filter(Boolean).join(", ")}`
+              : ""}
+            .
           </p>
           <button
             type="button"
             onClick={doSend}
+            disabled={loading}
             style={{
               width: "100%",
               borderRadius: "999px",
@@ -462,11 +502,12 @@ export default function RsvpForm({
               padding: "0.7rem 1.5rem",
               fontFamily: "var(--font-pt), serif",
               fontSize: "0.9rem",
-              cursor: "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.6 : 1,
               transition: "opacity 0.2s ease",
             }}
           >
-            Confirm &amp; Send
+            {loading ? "Saving…" : "Confirm & Decline"}
           </button>
         </div>
       )}
