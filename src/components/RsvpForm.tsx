@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DietaryInfo } from "@/db/schema";
+import type { DietaryInfo, GroupLabel } from "@/db/schema";
 
 type InitialRsvp = {
   attending: boolean;
@@ -37,12 +37,16 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
+const OUT_OF_TOWN_LABELS: GroupLabel[] = ["Nikki Friends", "Nick Friends"];
+
 export default function RsvpForm({
   maxPartySize,
   initial,
+  groupLabel,
 }: {
   maxPartySize: number;
   initial: InitialRsvp;
+  groupLabel?: GroupLabel | null;
 }) {
   const [attending, setAttending] = useState<boolean>(initial?.attending ?? true);
   const [needsHotel, setNeedsHotel] = useState<boolean>(initial?.needsHotel ?? false);
@@ -252,7 +256,8 @@ export default function RsvpForm({
             </div>
             {needsHotel && (
               <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: "0.6rem 0 0", lineHeight: 1.55 }}>
-                Plan to stay in downtown Cincinnati. Depending on out-of-town attendance, we may put together a room block — stay tuned!
+                {groupLabel && OUT_OF_TOWN_LABELS.includes(groupLabel) && "Plan to stay in downtown Cincinnati. "}
+                Depending on out-of-town attendance, we may put together a room block — stay tuned!
               </p>
             )}
           </fieldset>

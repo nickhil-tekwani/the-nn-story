@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { GroupLabel } from "@/db/schema";
 import { auth } from "@/auth";
 import RotatingBackground from "@/components/RotatingBackground";
 import { SignInButton, SignOutButton } from "@/components/AuthButtons";
@@ -131,6 +132,7 @@ export default async function EngagementPage() {
           <Welcome
             firstName={session.user?.name?.split(" ")[0] ?? null}
             maxPartySize={group.maxPartySize}
+            groupLabel={group.groupLabel}
             rsvp={rsvp}
           />
         )}
@@ -159,10 +161,12 @@ function SignedOut() {
 function Welcome({
   firstName,
   maxPartySize,
+  groupLabel,
   rsvp,
 }: {
   firstName: string | null;
   maxPartySize: number;
+  groupLabel: GroupLabel | null | undefined;
   rsvp: {
     attending: boolean;
     needsHotel: boolean;
@@ -182,7 +186,7 @@ function Welcome({
       >
         Welcome{firstName ? `, ${firstName}` : ""} — we can&apos;t wait to celebrate with you.
       </p>
-      <RsvpForm maxPartySize={maxPartySize} initial={rsvp} />
+      <RsvpForm maxPartySize={maxPartySize} groupLabel={groupLabel} initial={rsvp} />
     </div>
   );
 }
