@@ -470,7 +470,7 @@ export default function RsvpForm({
                   {attendingGuests.length}/{guests.length}
                 </strong>{" "}
                 {attendingGuests.length === 1 ? "person" : "people"} in your party{" "}
-                {attendingGuests.length === 1 ? "is" : "are"} going to be marked as coming.
+                {attendingGuests.length === 1 ? "is" : "are"} going to be marked as attending.
                 Please confirm this is correct before submitting.
               </p>
               <button
