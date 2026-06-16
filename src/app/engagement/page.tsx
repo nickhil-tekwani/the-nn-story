@@ -8,12 +8,19 @@ import PhoneClaim from "@/components/PhoneClaim";
 import RsvpForm from "@/components/RsvpForm";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
 
+const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/nikkinickhill-66.jpg";
+
 export const metadata: Metadata = {
   openGraph: {
     title: "Nickhil ♥ Nikki — You're Invited!",
+    description: "An engagement celebration — save the date.",
+    images: [{ url: OG_IMAGE, width: 1200, alt: "Nickhil & Nikki" }],
+    type: "website",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Nickhil ♥ Nikki — You're Invited!",
+    images: [OG_IMAGE],
   },
 };
 
