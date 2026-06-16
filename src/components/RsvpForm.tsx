@@ -255,10 +255,10 @@ export default function RsvpForm({
     <>
       {displayedRsvp !== null && (() => {
         const ps = displayedRsvp.partySize;
-        const full = ps === maxPartySize;
-        const none = ps === 0;
-        const bg    = none ? "rgba(155,28,28,0.1)"  : full ? "rgba(45,106,79,0.1)"  : "rgba(146,64,14,0.1)";
-        const color = none ? "#9b1c1c"               : full ? "#2d6a4f"              : "#92400e";
+        const declined = !displayedRsvp.attending;
+        const full = !declined && ps === maxPartySize;
+        const bg    = declined ? "rgba(155,28,28,0.1)" : full ? "rgba(45,106,79,0.1)" : "rgba(146,64,14,0.1)";
+        const color = declined ? "#9b1c1c"              : full ? "#2d6a4f"             : "#92400e";
         return (
           <div style={{ textAlign: "center", marginBottom: "1.1rem" }}>
             <span style={{
