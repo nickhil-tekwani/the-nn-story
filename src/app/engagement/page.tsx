@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import VideoBackground from "@/components/VideoBackground";
+import RotatingBackground from "@/components/RotatingBackground";
 import { SignInButton, SignOutButton } from "@/components/AuthButtons";
 import PhoneClaim from "@/components/PhoneClaim";
 import RsvpForm from "@/components/RsvpForm";
@@ -25,7 +25,7 @@ export default async function EngagementPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <VideoBackground />
+      <RotatingBackground />
 
       {/* Floating nav — on the dark photo, keep light text */}
       {session && (

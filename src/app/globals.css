@@ -67,6 +67,25 @@ body {
 }
 
 /*
+ * Rotating background photos (see RotatingBackground.tsx). Each photo fills the
+ * viewport; the incoming photo fades in on top of the outgoing one.
+ */
+.bg-rotator-img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.bg-fade-in {
+  animation: bgFadeIn 1200ms ease forwards;
+}
+@keyframes bgFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/*
  * Overlay: a dark tint + backdrop blur applied on top of whichever photo is
  * showing. Increase blur-px for more blur, decrease bg-black opacity for
  * a lighter/darker overall feel.

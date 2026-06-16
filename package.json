@@ -9,6 +9,7 @@
     "lint": "next lint",
     "qr": "node scripts/make-qr.js",
     "gallery:add": "node scripts/gallery-add.js",
+    "bg:add": "node scripts/bg-add.js",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
