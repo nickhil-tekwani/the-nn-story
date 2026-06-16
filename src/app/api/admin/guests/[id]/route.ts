@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { db, groups } from "@/db";
+import { db, groups, rsvps } from "@/db";
 import { isAdminEmail } from "@/lib/admin";
 
 async function requireAdmin() {
@@ -40,6 +40,7 @@ export async function PATCH(
   const groupId = await parseId(params);
   if (!groupId) return NextResponse.json({ error: "Invalid id." }, { status: 400 });
 
+  await db.delete(rsvps).where(eq(rsvps.groupId, groupId));
   await db
     .update(groups)
     .set({ claimedByEmail: null, claimedByPhone: null, claimedAt: null })
