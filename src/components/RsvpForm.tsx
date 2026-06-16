@@ -325,7 +325,7 @@ export default function RsvpForm({
                               onClick={() => selectAll(g.idx)}
                               className="dietary-all-btn"
                             >
-                              {PROTEINS.every((p) => dietary[g.idx][p.key]) ? "none" : "all"}
+                              {PROTEINS.every((p) => dietary[g.idx][p.key]) ? "clear" : "all"}
                             </button>
                             <button
                               type="button"
