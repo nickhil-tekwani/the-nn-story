@@ -34,6 +34,14 @@ select,
   cursor: pointer;
 }
 
+button {
+  transition: opacity 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
 html {
   scrollbar-gutter: stable;
 }
@@ -109,10 +117,4 @@ body {
   border: 1px solid rgba(26, 22, 19, 0.18);
   border-radius: 999px;
   padding: 0.15rem 0.55rem;
-  cursor: pointer;
-  opacity: 1;
-  transition: opacity 0.2s ease;
-}
-.dietary-all-btn:hover {
-  opacity: 0.45;
 }
