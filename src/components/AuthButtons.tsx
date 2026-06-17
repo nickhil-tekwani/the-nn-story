@@ -1,12 +1,11 @@
 "use client";
 
 import { signIn, signOut } from "next-auth/react";
-import { track } from "@vercel/analytics";
 
 export function SignInButton() {
   return (
     <button
-      onClick={() => { track("sign_in_clicked"); signIn("google"); }}
+      onClick={() => signIn("google")}
       className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-3 font-sans text-sm font-medium text-stone-800 shadow-lg transition hover:bg-stone-100"
     >
       <GoogleMark />
@@ -18,7 +17,7 @@ export function SignInButton() {
 export function SignOutButton() {
   return (
     <button
-      onClick={() => { track("sign_out_clicked"); signOut(); }}
+      onClick={() => signOut()}
       className="font-sans text-xs uppercase tracking-widest text-cream/60 underline-offset-4 hover:underline"
       style={{ color: "rgba(250,247,242,0.6)" }}
     >

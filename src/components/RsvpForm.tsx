@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { track } from "@vercel/analytics";
 import type { DietaryInfo, GroupLabel } from "@/db/schema";
 
 type InitialRsvp = {
@@ -156,7 +155,6 @@ export default function RsvpForm({
 
   function addGuest() {
     if (guests.length >= maxPartySize) return;
-    track("rsvp_guest_added");
     setGuests((prev) => [...prev, { name: "", attending: true, editing: true, isNew: true }]);
     setDietary((prev) => [...prev, emptyDiet()]);
     setVegMode((prev) => [...prev, false]);
@@ -237,7 +235,6 @@ export default function RsvpForm({
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
       setSaved(true);
       setDisplayedRsvp({ attending, partySize });
-      track("rsvp_submitted", { attending, guestCount: partySize, needsHotel });
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -284,10 +281,10 @@ export default function RsvpForm({
       <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
         <legend style={legendStyle}>Will you be joining us?</legend>
         <div style={{ display: "flex", gap: "0.5rem", width: "100%" }}>
-          <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); setConfirmPending(false); track("rsvp_attending_toggled", { attending: true }); }}>
+          <Toggle active={attending} onClick={() => { setAttending(true); setSaved(false); setConfirmPending(false); }}>
             Joyfully accept
           </Toggle>
-          <Toggle active={!attending} onClick={() => { setAttending(false); setSaved(false); setConfirmPending(false); track("rsvp_attending_toggled", { attending: false }); }}>
+          <Toggle active={!attending} onClick={() => { setAttending(false); setSaved(false); setConfirmPending(false); }}>
             Regretfully decline
           </Toggle>
         </div>

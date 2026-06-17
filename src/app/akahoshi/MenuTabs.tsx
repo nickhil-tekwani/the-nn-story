@@ -2,7 +2,6 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { track } from "@vercel/analytics";
 import styles from "./akahoshi.module.css";
 
 /* ---- Food data ---- */
@@ -346,7 +345,6 @@ export default function MenuTabs() {
                       setSelectedName(g.name);
                       setSearch(g.name);
                       setOpen(false);
-                      track("menu_guest_selected", { guest: g.name });
                     }}
                   >
                     {g.name}
@@ -368,7 +366,7 @@ export default function MenuTabs() {
             role="tab"
             aria-selected={active === i}
             className={active === i ? styles.tabActive : styles.tab}
-            onClick={() => { setActive(i); track("menu_tab_switched", { tab: label }); }}
+            onClick={() => setActive(i)}
           >
             {label}
           </button>
@@ -469,7 +467,7 @@ export default function MenuTabs() {
                 <button
                   key={v.name}
                   className={styles.pillBtn}
-                  onClick={() => { setOpenHighball(v.name); track("highball_modal_opened", { variant: v.name }); }}
+                  onClick={() => setOpenHighball(v.name)}
                 >
                   {v.name} <em>{v.base}</em>
                 </button>

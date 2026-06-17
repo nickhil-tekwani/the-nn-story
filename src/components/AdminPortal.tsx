@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { track } from "@vercel/analytics";
 import { SignOutButton } from "@/components/AuthButtons";
 import { formatPhone } from "@/lib/phone";
 import type { GroupLabel } from "@/db/schema";
@@ -130,7 +129,6 @@ export default function AdminPortal() {
         `Created ${data.created}, updated ${data.updated} group(s).` +
           (errs.length ? ` Skipped ${errs.length}: ${errs.join(" ")}` : ""),
       );
-      track("admin_csv_uploaded", { created: data.created, updated: data.updated, skipped: errs.length });
       setCsv("");
       await load();
     } finally {
@@ -158,7 +156,6 @@ export default function AdminPortal() {
   }
 
   async function bulkAction(method: "DELETE" | "PATCH") {
-    track("admin_bulk_action", { action: method === "DELETE" ? "delete" : "unclaim", count: selected.size });
     setBulkLoading(true);
     try {
       await Promise.all([...selected].map((id) => fetch(`/api/admin/guests/${id}`, { method })));
