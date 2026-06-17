@@ -95,6 +95,7 @@ export const rsvps = pgTable(
     partySize: integer("party_size").notNull(),
     partyMembers: text("party_members").array().notNull().default([]),
     dietaryRestrictions: jsonb("dietary_restrictions").$type<DietaryInfo[]>().notNull().default([]),
+    hometown: text("hometown"),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const attending = Boolean(body?.attending);
   const needsHotel = Boolean(body?.needsHotel);
+  const hometown = attending && needsHotel ? (String(body?.hometown ?? "").trim() || null) : null;
   const rawInvitedNames: unknown = body?.invitedNames;
   const partySize = Number(body?.partySize);
   const rawMembers: unknown = body?.partyMembers;
@@ -99,6 +100,7 @@ export async function POST(req: Request) {
     groupId: group.id,
     attending,
     needsHotel: attending ? needsHotel : false,
+    hometown,
     partySize: attending ? partySize : 0,
     partyMembers: attending ? partyMembers : [],
     dietaryRestrictions: attending ? dietaryRestrictions : [],
@@ -113,6 +115,7 @@ export async function POST(req: Request) {
       set: {
         attending: values.attending,
         needsHotel: values.needsHotel,
+        hometown: values.hometown,
         partySize: values.partySize,
         partyMembers: values.partyMembers,
         dietaryRestrictions: values.dietaryRestrictions,

@@ -7,6 +7,7 @@ import type { DietaryInfo, GroupLabel } from "@/db/schema";
 type InitialRsvp = {
   attending: boolean;
   needsHotel: boolean;
+  hometown: string | null;
   partySize: number;
   partyMembers: string[];
   dietaryRestrictions?: DietaryInfo[];
@@ -101,6 +102,7 @@ export default function RsvpForm({
 }) {
   const [attending, setAttending] = useState<boolean>(initial?.attending ?? true);
   const [needsHotel, setNeedsHotel] = useState<boolean>(initial?.needsHotel ?? false);
+  const [hometown, setHometown] = useState<string>(initial?.hometown ?? "");
   const [guests, setGuests] = useState<GuestEntry[]>(() =>
     buildGuests(invitedNames, maxPartySize, initial)
   );
@@ -231,7 +233,7 @@ export default function RsvpForm({
       const res = await fetch("/api/rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attending, needsHotel, partySize, partyMembers, dietaryRestrictions, invitedNames: allNames }),
+        body: JSON.stringify({ attending, needsHotel, hometown, partySize, partyMembers, dietaryRestrictions, invitedNames: allNames }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
@@ -425,10 +427,19 @@ export default function RsvpForm({
               </Toggle>
             </div>
             {needsHotel && (
-              <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: "0.6rem 0 0", lineHeight: 1.55 }}>
-                {groupLabel && OUT_OF_TOWN_LABELS.includes(groupLabel) && "Plan to stay in downtown Cincinnati. "}
-                Depending on out-of-town attendance, we may put together a room block — stay tuned!
-              </p>
+              <>
+                <input
+                  type="text"
+                  value={hometown}
+                  onChange={(e) => { setHometown(e.target.value); setSaved(false); }}
+                  placeholder="Where are you based?"
+                  style={{ ...inputStyle, marginTop: "0.6rem" }}
+                />
+                <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: "0.6rem 0 0", lineHeight: 1.55 }}>
+                  {groupLabel && OUT_OF_TOWN_LABELS.includes(groupLabel) && "Plan to stay in downtown Cincinnati. "}
+                  Depending on out-of-town attendance, we may put together a room block — stay tuned!
+                </p>
+              </>
             )}
           </fieldset>
         </>

@@ -180,6 +180,7 @@ function Welcome({
   rsvp: {
     attending: boolean;
     needsHotel: boolean;
+    hometown: string | null;
     partySize: number;
     partyMembers: string[];
   } | null;
