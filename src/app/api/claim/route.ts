@@ -3,6 +3,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db, groups, groupPhones } from "@/db";
 import { normalizePhone } from "@/lib/phone";
+import { logEvent } from "@/lib/logEvent";
 
 /** Last 4 digits of an E.164 number, for a friendly "ending in 4040" hint. */
 function lastFour(e164: string | null): string {
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
     .returning({ id: groups.id });
 
   if (claimed.length > 0) {
+    await logEvent("invite_claimed", { email, groupId: match.groupId });
     return NextResponse.json({ ok: true });
   }
 

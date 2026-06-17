@@ -104,6 +104,21 @@ export const rsvps = pgTable(
   }),
 );
 
+/**
+ * Server-side audit log. One row per meaningful action.
+ * `email` is the Google account from the session; `groupId` links to the
+ * relevant guest group so events can be joined to guest data.
+ */
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  event: text("event").notNull(),
+  email: text("email"),
+  groupId: integer("group_id").references(() => groups.id, { onDelete: "set null" }),
+  properties: jsonb("properties").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Group = typeof groups.$inferSelect;
 export type GroupPhone = typeof groupPhones.$inferSelect;
 export type Rsvp = typeof rsvps.$inferSelect;
+export type Event = typeof events.$inferSelect;

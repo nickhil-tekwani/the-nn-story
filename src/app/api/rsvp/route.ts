@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db, groups, rsvps } from "@/db";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
+import { logEvent } from "@/lib/logEvent";
 import type { DietaryInfo } from "@/db/schema";
 
 export async function GET() {
@@ -131,6 +132,12 @@ export async function POST(req: Request) {
         .where(eq(groups.id, group.id));
     }
   }
+
+  await logEvent("rsvp_submitted", {
+    email: session?.user?.email,
+    groupId: group.id,
+    properties: { attending, needsHotel: attending ? needsHotel : false, partySize: attending ? partySize : 0 },
+  });
 
   return NextResponse.json({ ok: true });
 }
