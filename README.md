@@ -1,6 +1,6 @@
 # Save the Date — Engagement Party
 
-A single-page invite site with a looping background video, Google sign-in,
+An invite site with Google sign-in,
 phone-number-based invite verification, an RSVP form, and an admin portal for
 managing the guest list. Built to deploy to Vercel as one project (frontend +
 API routes = the backend).
@@ -11,7 +11,7 @@ API routes = the backend).
 
 ## How it works
 
-1. **Not signed in** → looping video + "Sign in with Google".
+1. **Not signed in** → background photo + "Sign in with Google".
 2. **Signed in, invite not yet verified** → enter the phone number where you got
    your invite. It's matched against the admin-uploaded guest list.
    - Number not on the list → rejected.
