@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { COUNTRIES, DEFAULT_COUNTRY, toE164 } from "@/lib/phone";
+import { track } from "@/lib/umami";
 
 const inputStyle: React.CSSProperties = {
   borderRadius: "0.5rem",
@@ -48,7 +49,8 @@ export default function PhoneClaim() {
         body: JSON.stringify({ phone: e164 }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Something went wrong."); return; }
+      if (!res.ok) { setError(data.error || "Something went wrong."); track("phone_claim_error", { reason: data.error || "unknown" }); return; }
+      track("phone_claim_success");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");

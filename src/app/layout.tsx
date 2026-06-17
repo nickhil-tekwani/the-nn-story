@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Gilda_Display, PT_Serif } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import "./globals.css";
 
 const gilda = Gilda_Display({
@@ -45,6 +46,12 @@ export default function RootLayout({
       <body>
         {children}
         <Analytics />
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="934e64be-55f1-4cc7-a371-b1a8ff48a41a"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
