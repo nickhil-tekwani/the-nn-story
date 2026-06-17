@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const attending = Boolean(body?.attending);
   const needsHotel = Boolean(body?.needsHotel);
-  const hometown = attending && needsHotel ? (String(body?.hometown ?? "").trim() || null) : null;
+  const hometown = !attending ? null : needsHotel ? (String(body?.hometown ?? "").trim() || null) : "Cincinnati, OH";
   const rawInvitedNames: unknown = body?.invitedNames;
   const partySize = Number(body?.partySize);
   const rawMembers: unknown = body?.partyMembers;
