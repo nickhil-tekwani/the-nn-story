@@ -192,11 +192,16 @@ function Welcome({
           fontSize: "0.9rem",
           color: "var(--ink-muted)",
           textAlign: "center",
-          marginBottom: "1.5rem",
+          marginBottom: (groupLabel === "Nick Friends" || groupLabel === "Nikki Friends") ? "0.75rem" : "1.5rem",
         }}
       >
         Welcome{firstName ? `, ${firstName}` : ""} — we can&apos;t wait to celebrate with you.
       </p>
+      {(groupLabel === "Nick Friends" || groupLabel === "Nikki Friends") && (
+        <p style={{ fontSize: "0.85rem", color: "var(--ink-muted)", textAlign: "center", marginBottom: "1.5rem", lineHeight: 1.6 }}>
+          Plan for a daytime ceremony in the burbs and a nighttime event in downtown Cincy — more details to come!
+        </p>
+      )}
       <RsvpForm maxPartySize={maxPartySize} invitedNames={invitedNames} groupLabel={groupLabel} initial={rsvp} />
     </div>
   );
