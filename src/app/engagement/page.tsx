@@ -109,7 +109,7 @@ export default async function EngagementPage() {
               color: "var(--ink-warm)",
             }}
           >
-            We&apos;re Engaged
+            You&apos;re Invited
           </h1>
           <p style={{ fontSize: "1rem", color: "var(--ink-mid)", margin: "0 0 0.2rem" }}>
             {formatted}
@@ -185,6 +185,8 @@ function Welcome({
     partyMembers: string[];
   } | null;
 }) {
+  const showAfterParty = groupLabel === "Nick Friends" || groupLabel === "Nikki Friends";
+
   return (
     <div>
       <p
@@ -195,9 +197,126 @@ function Welcome({
           marginBottom: "1.5rem",
         }}
       >
-        Welcome{firstName ? `, ${firstName}` : ""} — we can&apos;t wait to celebrate with you.{(groupLabel === "Nick Friends" || groupLabel === "Nikki Friends") && " Plan for a daytime ceremony in the burbs and a nighttime event in downtown Cincy — more details to come!"}
+        Welcome{firstName ? `, ${firstName}` : ""} — we can&apos;t wait to celebrate with you.
       </p>
+      <EventDetails showPastelColors={showAfterParty} />
+      {showAfterParty && <AfterPartyDetails />}
       <RsvpForm maxPartySize={maxPartySize} invitedNames={invitedNames} groupLabel={groupLabel} initial={rsvp} />
     </div>
+  );
+}
+
+function AfterPartyDetails() {
+  return (
+    <section
+      aria-labelledby="after-party-details-title"
+      style={{
+        marginTop: "-0.75rem",
+        marginBottom: "1.5rem",
+        border: "1px solid rgba(193,18,31,0.18)",
+        borderRadius: "0.75rem",
+        background: "rgba(193,18,31,0.035)",
+        padding: "1rem 1.2rem",
+        textAlign: "center",
+      }}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          marginBottom: "0.55rem",
+          borderRadius: "999px",
+          background: "rgba(193,18,31,0.1)",
+          padding: "0.2rem 0.7rem",
+          color: "var(--star)",
+          fontSize: "0.68rem",
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+        }}
+      >
+        Nighttime
+      </span>
+      <h2
+        id="after-party-details-title"
+        style={{
+          margin: "0 0 0.4rem",
+          fontFamily: "var(--font-gilda), serif",
+          fontSize: "1.2rem",
+          fontWeight: 400,
+          color: "var(--ink-warm)",
+        }}
+      >
+        After Party
+      </h2>
+      <p style={{ margin: "0 0 0.35rem", color: "var(--ink-mid)", fontSize: "0.88rem" }}>
+        Downtown Cincinnati
+      </p>
+      <p style={{ margin: 0, color: "var(--ink-muted)", fontSize: "0.8rem" }}>
+        Exact details to follow.
+      </p>
+    </section>
+  );
+}
+
+function EventDetails({ showPastelColors }: { showPastelColors: boolean }) {
+  return (
+    <section
+      aria-labelledby="ceremony-details-title"
+      style={{
+        marginBottom: "1.5rem",
+        border: "1px solid rgba(26,22,19,0.12)",
+        borderRadius: "0.75rem",
+        background: "#faf9f6",
+        padding: "1.1rem 1.2rem",
+        textAlign: "center",
+      }}
+    >
+      <p
+        style={{
+          margin: "0 0 0.45rem",
+          color: "var(--ink-muted)",
+          fontSize: "0.72rem",
+          letterSpacing: "0.08em",
+        }}
+      >
+        Latha &amp; Prashanth Kesav formally invite you to the
+      </p>
+      <h2
+        id="ceremony-details-title"
+        style={{
+          margin: "0 0 0.75rem",
+          fontFamily: "var(--font-gilda), serif",
+          fontSize: "1.2rem",
+          fontWeight: 400,
+          color: "var(--ink-warm)",
+        }}
+      >
+        Engagement Ceremony
+      </h2>
+      <p style={{ margin: "0 0 0.65rem", color: "var(--ink-mid)", fontSize: "0.9rem" }}>
+        11:00 AM–2:30 PM
+      </p>
+      <address style={{ margin: "0", color: "var(--ink-muted)", fontSize: "0.85rem", fontStyle: "normal", lineHeight: 1.55 }}>
+        <a
+          href="https://www.google.com/maps/search/?api=1&query=4985%20Chestnut%20Hill%20Dr%2C%20Mason%2C%20OH%2045040"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
+          <strong style={{ color: "var(--ink-warm)", fontWeight: 600 }}>The Kesav Residence</strong>
+          <br />
+          4985 Chestnut Hill Dr
+          <br />
+          Mason, OH 45040
+        </a>
+      </address>
+      <hr style={{ width: "2rem", height: "1px", margin: "0.85rem auto", border: 0, background: "rgba(26,22,19,0.14)" }} />
+      <p style={{ margin: "0 0 0.3rem", color: "var(--ink-muted)", fontSize: "0.82rem", lineHeight: 1.5 }}>
+        Lunch will be provided after the ceremony.
+      </p>
+      <p style={{ margin: 0, color: "var(--ink-warm)", fontSize: "0.82rem", lineHeight: 1.5 }}>
+        <strong style={{ fontWeight: 600 }}>Dress code:</strong>{" "}
+        {showPastelColors ? "Pastel colors in Indian Formal" : "Indian Formal"}
+      </p>
+    </section>
   );
 }
