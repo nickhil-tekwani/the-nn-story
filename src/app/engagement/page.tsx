@@ -290,7 +290,7 @@ function EventDetails({ showPastelColors }: { showPastelColors: boolean }) {
           color: "var(--ink-warm)",
         }}
       >
-        Engagement Ceremony
+        Engagement Ceremony of Nikki and Nickhil
       </h2>
       <p style={{ margin: "0 0 0.65rem", color: "var(--ink-mid)", fontSize: "0.9rem" }}>
         11:00 AM–2:30 PM
