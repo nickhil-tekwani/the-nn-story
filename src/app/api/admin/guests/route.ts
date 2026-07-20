@@ -43,8 +43,10 @@ export async function GET() {
       claimedByPhone: g.claimedByPhone,
       attending: r?.attending ?? null,
       needsHotel: r?.needsHotel ?? null,
+      hometown: r?.hometown ?? null,
       partySize: r?.partySize ?? null,
       partyMembers: r?.partyMembers ?? [],
+      dietaryRestrictions: r?.dietaryRestrictions ?? [],
     };
   });
 

@@ -47,6 +47,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const OUT_OF_TOWN_LABELS: GroupLabel[] = ["Nikki Friends", "Nick Friends"];
+const DIETARY_LABELS: GroupLabel[] = ["Nikki Friends", "Nick Friends"];
 
 function buildGuests(invitedNames: string[], maxPartySize: number, initial: InitialRsvp): GuestEntry[] {
   const base = invitedNames.length > 0
@@ -94,11 +95,19 @@ export default function RsvpForm({
   invitedNames,
   initial,
   groupLabel,
+  endpoint = "/api/rsvp",
+  submitLabel = "Send RSVP",
+  confirmLabel = "Confirm & Send",
+  onSaved,
 }: {
   maxPartySize: number;
   invitedNames: string[];
   initial: InitialRsvp;
   groupLabel?: GroupLabel | null;
+  endpoint?: string;
+  submitLabel?: string;
+  confirmLabel?: string;
+  onSaved?: () => void | Promise<void>;
 }) {
   const [attending, setAttending] = useState<boolean>(initial?.attending ?? true);
   const [needsHotel, setNeedsHotel] = useState<boolean>(initial?.needsHotel ?? false);
@@ -124,6 +133,9 @@ export default function RsvpForm({
   const attendingGuests = guests
     .map((g, i) => ({ ...g, idx: i }))
     .filter((g) => g.attending);
+  const showDietaryPreferences = Boolean(
+    groupLabel && DIETARY_LABELS.includes(groupLabel)
+  );
 
   function toggleGuest(guestIdx: number, checked: boolean) {
     setGuests((prev) => prev.map((g, i) => (i === guestIdx ? { ...g, attending: checked } : g)));
@@ -230,7 +242,7 @@ export default function RsvpForm({
     setLoading(true);
     setConfirmPending(false);
     try {
-      const res = await fetch("/api/rsvp", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ attending, needsHotel, hometown, partySize, partyMembers, dietaryRestrictions, invitedNames: allNames }),
@@ -240,6 +252,7 @@ export default function RsvpForm({
       setSaved(true);
       setDisplayedRsvp({ attending, partySize });
       track("rsvp_submitted", { attending, guestCount: partySize, needsHotel });
+      await onSaved?.();
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -333,17 +346,20 @@ export default function RsvpForm({
             )}
           </fieldset>
 
-          {/* Dietary — only shown when at least one guest is attending */}
-          {attendingGuests.length > 0 && (
-            <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          {/* Dietary — only collected for the two friends groups. */}
+          {showDietaryPreferences && attendingGuests.length > 0 && (
+            <fieldset className="dietary-fieldset" style={{ border: 0, padding: 0, margin: 0 }}>
               <legend style={{ ...legendStyle, marginBottom: "0.25rem" }}>
                 Dietary preferences
               </legend>
               <p style={{ fontSize: "0.78rem", color: "var(--ink-muted)", margin: "0 0 0.75rem", lineHeight: 1.5 }}>
                 Check the items each person eats.
               </p>
-              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"] }}>
-                <table style={{ borderCollapse: "collapse", minWidth: "100%", fontSize: "0.82rem" }}>
+              {attendingGuests.length > 2 && (
+                <p className="dietary-scroll-hint">Swipe to see every guest →</p>
+              )}
+              <div className="dietary-scroll">
+                <table className="dietary-table" style={{ borderCollapse: "collapse", minWidth: "100%", fontSize: "0.82rem" }}>
                   <thead>
                     <tr>
                       <th style={{ textAlign: "left", padding: "0.4rem 0.75rem 0.4rem 0", color: "var(--ink-muted)", fontWeight: 500, whiteSpace: "nowrap" }} />
@@ -471,7 +487,7 @@ export default function RsvpForm({
               transition: "all 0.25s ease",
             }}
           >
-            {loading ? "Saving…" : confirmPending ? "Edit" : saved ? "Update RSVP" : "Send RSVP"}
+            {loading ? "Saving…" : confirmPending ? "Edit" : saved ? "Update RSVP" : submitLabel}
           </button>
 
           {confirmPending && (
@@ -508,7 +524,7 @@ export default function RsvpForm({
                   transition: "opacity 0.2s ease",
                 }}
               >
-                Confirm &amp; Send
+                {confirmLabel}
               </button>
             </div>
           )}
@@ -573,10 +589,11 @@ function GuestRow({
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minHeight: "2rem" }}>
       <input
+        className="guest-attendance-checkbox"
         type="checkbox"
         checked={guest.attending}
         onChange={(e) => onToggle(e.target.checked)}
-        style={{ accentColor: "var(--ink-warm)", width: "1rem", height: "1rem", cursor: "pointer", flexShrink: 0 }}
+        style={{ accentColor: "var(--ink-warm)", cursor: "pointer", flexShrink: 0 }}
       />
       {guest.editing ? (
         <input

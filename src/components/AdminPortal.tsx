@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { track } from "@/lib/umami";
 import { SignOutButton } from "@/components/AuthButtons";
+import RsvpForm from "@/components/RsvpForm";
 import { formatPhone } from "@/lib/phone";
-import type { GroupLabel } from "@/db/schema";
+import type { DietaryInfo, GroupLabel } from "@/db/schema";
 
 type GroupRow = {
   id: number;
@@ -17,8 +18,10 @@ type GroupRow = {
   claimedByPhone: string | null;
   attending: boolean | null;
   needsHotel: boolean | null;
+  hometown: string | null;
   partySize: number | null;
   partyMembers: string[];
+  dietaryRestrictions: DietaryInfo[];
 };
 
 const GROUP_COLORS: Record<GroupLabel, { bg: string; text: string }> = {
@@ -63,6 +66,7 @@ export default function AdminPortal() {
   const [search, setSearch] = useState("");
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [editingGroup, setEditingGroup] = useState<GroupRow | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/guests");
@@ -411,7 +415,7 @@ export default function AdminPortal() {
                   </Td>
                   <Td>{g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}</Td>
                   <Td>
-                    <RowActions groupId={g.id} onDone={load} />
+                    <RowActions groupId={g.id} onEdit={() => setEditingGroup(g)} onDone={load} />
                   </Td>
                 </tr>
               ))}
@@ -426,6 +430,16 @@ export default function AdminPortal() {
           </table>
         </section>
       </div>
+      {editingGroup && (
+        <AdminRsvpModal
+          group={editingGroup}
+          onClose={() => setEditingGroup(null)}
+          onSaved={async () => {
+            await load();
+            setEditingGroup(null);
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -479,7 +493,15 @@ function Td({ children, style }: { children?: React.ReactNode; style?: React.CSS
   );
 }
 
-function RowActions({ groupId, onDone }: { groupId: number; onDone: () => void }) {
+function RowActions({
+  groupId,
+  onEdit,
+  onDone,
+}: {
+  groupId: number;
+  onEdit: () => void;
+  onDone: () => void;
+}) {
   const [confirm, setConfirm] = useState<"delete" | "unclaim" | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -518,7 +540,13 @@ function RowActions({ groupId, onDone }: { groupId: number; onDone: () => void }
   }
 
   return (
-    <div style={{ display: "flex", gap: "0.25rem" }}>
+    <div style={{ display: "flex", gap: "0.25rem", whiteSpace: "nowrap" }}>
+      <button
+        onClick={onEdit}
+        style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: INK, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem", fontWeight: 600 }}
+      >
+        Edit RSVP
+      </button>
       <button
         onClick={() => setConfirm("unclaim")}
         style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem" }}
@@ -531,6 +559,88 @@ function RowActions({ groupId, onDone }: { groupId: number; onDone: () => void }
       >
         Delete
       </button>
+    </div>
+  );
+}
+
+function AdminRsvpModal({
+  group,
+  onClose,
+  onSaved,
+}: {
+  group: GroupRow;
+  onClose: () => void;
+  onSaved: () => void | Promise<void>;
+}) {
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  const initial = group.attending == null
+    ? null
+    : {
+        attending: group.attending,
+        needsHotel: Boolean(group.needsHotel),
+        hometown: group.hometown,
+        partySize: group.partySize ?? 0,
+        partyMembers: group.partyMembers,
+        dietaryRestrictions: group.dietaryRestrictions,
+      };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-rsvp-title"
+      className="admin-rsvp-modal-backdrop"
+    >
+      <section className="admin-rsvp-modal-card">
+        <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem" }}>
+          <div>
+            <p style={{ margin: "0 0 0.25rem", color: MUTED, fontSize: "0.72rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+              {group.claimedByEmail ? "Verified guest" : "Not yet verified"}
+            </p>
+            <h2 id="admin-rsvp-title" style={{ margin: 0, fontFamily: "var(--font-gilda), serif", fontSize: "1.55rem", fontWeight: 400 }}>
+              Edit RSVP
+            </h2>
+            <p style={{ margin: "0.35rem 0 0", color: MUTED, fontSize: "0.85rem" }}>
+              {group.invitedNames.join(", ")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close RSVP editor"
+            style={{ border: 0, background: "none", color: MUTED, fontSize: "1.5rem", lineHeight: 1, padding: "0.15rem", cursor: "pointer" }}
+          >
+            ×
+          </button>
+        </header>
+
+        <p style={{ margin: "0 0 1.25rem", padding: "0.7rem 0.85rem", borderRadius: "0.5rem", background: "#f5f3ef", color: MUTED, fontSize: "0.78rem", lineHeight: 1.5 }}>
+          Changes save to the same RSVP the guest will see and can update after claiming their invite.
+        </p>
+
+        <RsvpForm
+          maxPartySize={group.maxPartySize}
+          invitedNames={group.invitedNames}
+          groupLabel={group.groupLabel}
+          initial={initial}
+          endpoint={`/api/admin/guests/${group.id}/rsvp`}
+          submitLabel="Save RSVP"
+          confirmLabel="Confirm & Save"
+          onSaved={onSaved}
+        />
+      </section>
     </div>
   );
 }
