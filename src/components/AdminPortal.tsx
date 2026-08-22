@@ -636,6 +636,7 @@ function AdminRsvpModal({
           groupLabel={group.groupLabel}
           initial={initial}
           endpoint={`/api/admin/guests/${group.id}/rsvp`}
+          method="PUT"
           submitLabel="Save RSVP"
           confirmLabel="Confirm & Save"
           onSaved={onSaved}
