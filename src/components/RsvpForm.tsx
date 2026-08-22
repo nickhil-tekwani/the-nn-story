@@ -96,6 +96,7 @@ export default function RsvpForm({
   initial,
   groupLabel,
   endpoint = "/api/rsvp",
+  method = "POST",
   submitLabel = "Send RSVP",
   confirmLabel = "Confirm & Send",
   onSaved,
@@ -105,6 +106,7 @@ export default function RsvpForm({
   initial: InitialRsvp;
   groupLabel?: GroupLabel | null;
   endpoint?: string;
+  method?: "POST" | "PUT";
   submitLabel?: string;
   confirmLabel?: string;
   onSaved?: () => void | Promise<void>;
@@ -243,7 +245,7 @@ export default function RsvpForm({
     setConfirmPending(false);
     try {
       const res = await fetch(endpoint, {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ attending, needsHotel, hometown, partySize, partyMembers, dietaryRestrictions, invitedNames: allNames }),
       });
