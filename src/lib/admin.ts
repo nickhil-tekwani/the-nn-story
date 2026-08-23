@@ -1,16 +1,13 @@
-const BUILT_IN_ADMIN_EMAILS = ["nikita.kesav@gmail.com"];
-
 /**
- * Admin access is controlled by the built-in allowlist and the ADMIN_EMAILS
- * env var, which accepts additional comma-separated Google emails.
+ * Admin access is controlled by the ADMIN_EMAILS env var: a comma-separated
+ * list of Google emails. Anyone who signs in with one of these emails gets
+ * access to the admin portal.
  */
 export function adminEmails(): string[] {
-  const configuredEmails = (process.env.ADMIN_EMAILS || "")
+  return (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
-
-  return [...new Set([...BUILT_IN_ADMIN_EMAILS, ...configuredEmails])];
 }
 
 export function isAdminEmail(email?: string | null): boolean {
