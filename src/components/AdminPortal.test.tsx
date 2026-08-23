@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+vi.mock("@/components/AuthButtons", () => ({ SignOutButton: () => null }));
+vi.mock("@/components/RsvpForm", () => ({ default: () => null }));
+
 import AdminPortal from "./AdminPortal";
 
 afterEach(() => {
@@ -51,5 +54,46 @@ describe("AdminPortal connected accounts", () => {
         { method: "DELETE" },
       );
     });
+  });
+});
+
+describe("AdminPortal party limit editor", () => {
+  it("updates the max without sending claim or RSVP data", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ groups: [group] }) })
+      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ ok: true, maxPartySize: 3 }) })
+      .mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ groups: [{ ...group, maxPartySize: 3 }] }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<AdminPortal />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit max party size, currently 2" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Max party size" }), { target: { value: "3" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/admin/guests/4", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ maxPartySize: 3 }),
+    });
+    expect(await screen.findByRole("button", { name: "Edit max party size, currently 3" })).toBeTruthy();
+    expect(screen.getByText("2/3 connected")).toBeTruthy();
+  });
+
+  it("does not allow a limit below the connected-account count", async () => {
+    const onePersonRsvp = { ...group, partySize: 1, partyMembers: ["First Guest"] };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ groups: [onePersonRsvp] }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<AdminPortal />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit max party size, currently 2" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Max party size" }), { target: { value: "1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe("Cannot be below the 2 connected accounts.");
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });
