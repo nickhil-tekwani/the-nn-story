@@ -14,8 +14,12 @@ type GroupRow = {
   phones: string[];
   maxPartySize: number;
   groupLabel: GroupLabel | null;
-  claimedByEmail: string | null;
-  claimedByPhone: string | null;
+  members: Array<{
+    id: number;
+    email: string;
+    phone: string;
+    joinedAt: string;
+  }>;
   attending: boolean | null;
   needsHotel: boolean | null;
   hometown: string | null;
@@ -48,7 +52,7 @@ function getSortValue(g: GroupRow, col: string): string | number {
     case "group":     return g.groupLabel?.toLowerCase() ?? LAST;
     case "phones":    return g.phones.join(", ").toLowerCase();
     case "max":       return g.maxPartySize;
-    case "claimed":   return g.claimedByEmail?.toLowerCase() ?? LAST;
+    case "claimed":   return g.members[0]?.email.toLowerCase() ?? LAST;
     case "rsvp":      return g.attending == null ? LAST : g.attending ? "a" : "b";
     case "attendees": return g.partySize ?? -1;
     case "hotel":     return g.attending ? (g.needsHotel ? "a" : "b") : LAST;
@@ -95,8 +99,7 @@ export default function AdminPortal() {
       g.invitedNames.join(" "),
       g.groupLabel ?? "",
       g.phones.join(" "),
-      g.claimedByEmail ?? "",
-      g.claimedByPhone ?? "",
+      g.members.map((member) => `${member.email} ${member.phone}`).join(" "),
       g.partyMembers.join(" "),
       g.attending == null ? "" : g.attending ? "yes" : "no",
     ].some((s) => s.toLowerCase().includes(q))
@@ -161,11 +164,11 @@ export default function AdminPortal() {
     });
   }
 
-  async function bulkAction(method: "DELETE" | "PATCH") {
-    track("admin_bulk_action", { action: method === "DELETE" ? "delete" : "unclaim", count: selected.size });
+  async function bulkDelete() {
+    track("admin_bulk_action", { action: "delete", count: selected.size });
     setBulkLoading(true);
     try {
-      await Promise.all([...selected].map((id) => fetch(`/api/admin/guests/${id}`, { method })));
+      await Promise.all([...selected].map((id) => fetch(`/api/admin/guests/${id}`, { method: "DELETE" })));
       await load();
     } finally {
       setBulkLoading(false);
@@ -285,7 +288,8 @@ export default function AdminPortal() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", gap: "1rem", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.85rem", color: MUTED }}>
             <span>{groups.length} invited groups</span>
-            <span>{groups.filter((g) => g.claimedByEmail).length} verified</span>
+            <span>{groups.filter((g) => g.members.length > 0).length} verified</span>
+            <span>{groups.reduce((sum, g) => sum + g.members.length, 0)} connected accounts</span>
             <span>{attendingCount} attending</span>
           </div>
           <input
@@ -324,14 +328,7 @@ export default function AdminPortal() {
           >
             <span style={{ color: INK }}>{selected.size} selected</span>
             <button
-              onClick={() => bulkAction("PATCH")}
-              disabled={bulkLoading}
-              style={{ borderRadius: "999px", border: BORDER, padding: "0.4rem 1rem", color: INK, background: "none", fontSize: "0.82rem", cursor: "pointer", fontFamily: "var(--font-pt), serif" }}
-            >
-              {bulkLoading ? "…" : "Unclaim selected"}
-            </button>
-            <button
-              onClick={() => bulkAction("DELETE")}
+              onClick={bulkDelete}
               disabled={bulkLoading}
               style={{ borderRadius: "999px", border: `1px solid rgba(193,18,31,0.3)`, padding: "0.4rem 1rem", color: STAR, background: "none", fontSize: "0.82rem", cursor: "pointer", fontFamily: "var(--font-pt), serif" }}
             >
@@ -358,7 +355,7 @@ export default function AdminPortal() {
                 <Th sortKey="group"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Group</Th>
                 <Th sortKey="phones"    sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Phones</Th>
                 <Th sortKey="max"       sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Max</Th>
-                <Th sortKey="claimed"   sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Claimed by</Th>
+                <Th sortKey="claimed"   sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Connected accounts</Th>
                 <Th sortKey="rsvp"      sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>RSVP</Th>
                 <Th sortKey="attendees" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Attendees</Th>
                 <Th sortKey="hotel"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Local?</Th>
@@ -400,12 +397,7 @@ export default function AdminPortal() {
                   </Td>
                   <Td>{g.maxPartySize}</Td>
                   <Td style={{ fontSize: "0.78rem", color: MUTED }}>
-                    {g.claimedByEmail ? (
-                      <>
-                        <div>{g.claimedByEmail}</div>
-                        {g.claimedByPhone && <div style={{ fontFamily: "monospace" }}>{formatPhone(g.claimedByPhone)}</div>}
-                      </>
-                    ) : "—"}
+                    <MemberList group={g} onDone={load} />
                   </Td>
                   <Td>{g.attending == null ? "—" : g.attending ? "Yes" : "No"}</Td>
                   <Td style={{ fontSize: "0.78rem" }}>
@@ -493,6 +485,80 @@ function Td({ children, style }: { children?: React.ReactNode; style?: React.CSS
   );
 }
 
+function MemberList({ group, onDone }: { group: GroupRow; onDone: () => void }) {
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function removeMember(memberId: number) {
+    setLoadingId(memberId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/guests/${group.id}/members/${memberId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Could not remove account.");
+        return;
+      }
+      onDone();
+    } finally {
+      setLoadingId(null);
+      setConfirmingId(null);
+    }
+  }
+
+  if (group.members.length === 0) return <>—</>;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", minWidth: "13rem" }}>
+      <div style={{ fontSize: "0.7rem", color: MUTED }}>
+        {group.members.length}/{group.maxPartySize} connected
+      </div>
+      {group.members.map((member) => (
+        <div key={member.id} style={{ borderTop: BORDER, paddingTop: "0.45rem" }}>
+          <div style={{ color: INK, overflowWrap: "anywhere" }}>{member.email}</div>
+          {member.phone && (
+            <div style={{ fontFamily: "monospace", marginTop: "0.15rem" }}>
+              {formatPhone(member.phone)}
+            </div>
+          )}
+          {confirmingId === member.id ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem" }}>
+              <span style={{ color: STAR }}>Remove access?</span>
+              <button
+                type="button"
+                onClick={() => removeMember(member.id)}
+                disabled={loadingId === member.id}
+                style={{ border: 0, background: "none", color: STAR, cursor: "pointer", fontWeight: 600, padding: 0 }}
+              >
+                {loadingId === member.id ? "…" : "Yes"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingId(null)}
+                style={{ border: 0, background: "none", color: MUTED, cursor: "pointer", padding: 0 }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingId(member.id)}
+              style={{ border: 0, background: "none", color: MUTED, cursor: "pointer", padding: "0.25rem 0 0", fontSize: "0.72rem", textDecoration: "underline" }}
+            >
+              Remove access
+            </button>
+          )}
+        </div>
+      ))}
+      {error && <div style={{ color: STAR }}>{error}</div>}
+    </div>
+  );
+}
+
 function RowActions({
   groupId,
   onEdit,
@@ -502,17 +568,17 @@ function RowActions({
   onEdit: () => void;
   onDone: () => void;
 }) {
-  const [confirm, setConfirm] = useState<"delete" | "unclaim" | null>(null);
+  const [confirm, setConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function act(method: "DELETE" | "PATCH") {
+  async function removeGroup() {
     setLoading(true);
     try {
-      await fetch(`/api/admin/guests/${groupId}`, { method });
+      await fetch(`/api/admin/guests/${groupId}`, { method: "DELETE" });
       onDone();
     } finally {
       setLoading(false);
-      setConfirm(null);
+      setConfirm(false);
     }
   }
 
@@ -520,17 +586,17 @@ function RowActions({
     return (
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <button
-          onClick={() => act(confirm === "delete" ? "DELETE" : "PATCH")}
+          onClick={removeGroup}
           disabled={loading}
           style={{
             background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer",
-            color: confirm === "delete" ? STAR : "var(--ink-mid)", fontFamily: "var(--font-pt), serif", fontWeight: 600,
+            color: STAR, fontFamily: "var(--font-pt), serif", fontWeight: 600,
           }}
         >
           {loading ? "…" : "Confirm"}
         </button>
         <button
-          onClick={() => setConfirm(null)}
+          onClick={() => setConfirm(false)}
           style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif" }}
         >
           Cancel
@@ -548,13 +614,7 @@ function RowActions({
         Edit RSVP
       </button>
       <button
-        onClick={() => setConfirm("unclaim")}
-        style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem" }}
-      >
-        Unclaim
-      </button>
-      <button
-        onClick={() => setConfirm("delete")}
+        onClick={() => setConfirm(true)}
         style={{ background: "none", border: "none", fontSize: "0.78rem", cursor: "pointer", color: MUTED, fontFamily: "var(--font-pt), serif", padding: "0.2rem 0.4rem" }}
       >
         Delete
@@ -607,7 +667,7 @@ function AdminRsvpModal({
         <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem" }}>
           <div>
             <p style={{ margin: "0 0 0.25rem", color: MUTED, fontSize: "0.72rem", letterSpacing: "0.16em", textTransform: "uppercase" }}>
-              {group.claimedByEmail ? "Verified guest" : "Not yet verified"}
+              {group.members.length > 0 ? "Verified guest" : "Not yet verified"}
             </p>
             <h2 id="admin-rsvp-title" style={{ margin: 0, fontFamily: "var(--font-gilda), serif", fontSize: "1.55rem", fontWeight: 400 }}>
               Edit RSVP

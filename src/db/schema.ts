@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   integer,
   jsonb,
   pgTable,
@@ -29,11 +31,10 @@ export type DietaryInfo = {
  *  - `maxPartySize` is the per-group cap. Defaults to the number of invited
  *    names but can be overridden by an admin.
  *  - A group can have many phone numbers (see `groupPhones`). ANY of them can
- *    claim the invite, but only once.
- *  - `claimedByEmail` is the Google account that claimed this invite (unique, so
- *    one account claims at most one group). `claimedByPhone` is the E.164 number
- *    that was used to claim — surfaced to other group members ("ending in 4040")
- *    so they know who to ask to manage the RSVP.
+ *    connect a Google account to the invite, up to `maxPartySize` accounts.
+ *  - `claimedByEmail`, `claimedByPhone`, and `claimedAt` retain the original
+ *    primary claimant for rollout/rollback compatibility. Access is authorized
+ *    through `groupMembers`, not these legacy columns.
  */
 export const GROUP_LABELS = [
   "Core",
@@ -74,6 +75,34 @@ export const groupPhones = pgTable(
   (t) => ({
     phoneIdx: uniqueIndex("group_phones_phone_idx").on(t.phone),
     groupIdx: index("group_phones_group_idx").on(t.groupId),
+  }),
+);
+
+/**
+ * Google accounts connected to invited groups. An email is globally unique, so
+ * one Google account belongs to at most one group. `slot` is unique within the
+ * group and is allocated from 1..maxPartySize; this makes the membership limit
+ * safe even when multiple approved members claim concurrently.
+ */
+export const groupMembers = pgTable(
+  "group_members",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    phone: text("phone").notNull(),
+    slot: integer("slot").notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    slotPositive: check("group_members_slot_positive", sql`${t.slot} > 0`),
+    emailIdx: uniqueIndex("group_members_email_idx").on(t.email),
+    slotIdx: uniqueIndex("group_members_group_slot_idx").on(t.groupId, t.slot),
+    groupIdx: index("group_members_group_idx").on(t.groupId),
   }),
 );
 
@@ -121,5 +150,6 @@ export const events = pgTable("events", {
 
 export type Group = typeof groups.$inferSelect;
 export type GroupPhone = typeof groupPhones.$inferSelect;
+export type GroupMember = typeof groupMembers.$inferSelect;
 export type Rsvp = typeof rsvps.$inferSelect;
 export type Event = typeof events.$inferSelect;

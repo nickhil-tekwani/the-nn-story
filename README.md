@@ -15,11 +15,13 @@ API routes = the backend).
 2. **Signed in, invite not yet verified** → enter the phone number where you got
    your invite. It's matched against the admin-uploaded guest list.
    - Number not on the list → rejected.
-   - Number already claimed by another Google account → rejected.
-   - Match found & unclaimed → bound to your Google account (one account ↔ one
-     invite, enforced in the DB).
-3. **Verified** → event details + RSVP form (attending? local or out of town? party
-   size, capped at the per-household max set by the admin).
+   - Approved number and group has room → connect the Google account to the
+     group's shared invite and RSVP.
+   - One Google account can belong to only one group. A group can connect up to
+     its invited party size in distinct Google accounts.
+   - Secondary members see a one-time notice that they joined an existing group.
+3. **Verified** → event details + the group's shared RSVP form (attending? local
+   or out of town? party size, capped at the per-household max set by the admin).
 4. **Admins** (emails in `ADMIN_EMAILS`) get `/admin` to upload guests and see
    live RSVP status.
 
@@ -67,6 +69,90 @@ npm run db:push      # pushes the schema to your database
 
 (`npm run db:studio` opens a browser GUI to inspect rows.)
 
+#### Safe feature testing with a disposable Neon branch
+
+Never run schema migrations or test RSVPs against the production `main`
+database. Neon branches are copy-on-write clones, so they are suitable for
+testing migrations against realistic data without changing production.
+
+Authenticate the Neon CLI and locate the project and its current branches:
+
+```bash
+npx --yes neonctl auth
+npx --yes neonctl projects list
+npx --yes neonctl branches list --project-id <PROJECT_ID>
+```
+
+If the account belongs to multiple organizations, add `--org-id <ORG_ID>` to
+the project-list command. Do not reuse a preview branch belonging to another PR.
+
+Create a feature-specific branch from `main`. Give manual test branches an
+expiration so they clean themselves up if teardown is forgotten:
+
+```bash
+npx --yes neonctl branches create \
+  --project-id <PROJECT_ID> \
+  --parent main \
+  --name dev/<FEATURE_NAME> \
+  --expires-at <ISO_8601_TIMESTAMP>
+```
+
+Record the returned branch ID, then verify it before applying migrations:
+
+```bash
+npx --yes neonctl branches get <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID>
+```
+
+Keep the development connection string shell-scoped instead of replacing the
+production-like `DATABASE_URL` in `.env.local`. These commands fetch it at
+runtime without printing or committing credentials:
+
+```bash
+env DATABASE_URL="$(npx --yes neonctl connection-string <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> --no-color)" npm run db:push
+
+env DATABASE_URL="$(npx --yes neonctl connection-string <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> --no-color)" npm run dev
+```
+
+For an existing installation, validate the exact checked-in SQL migration on
+the disposable branch rather than using `db:push`. `neonctl psql` requires a
+local `psql` installation:
+
+```bash
+npx --yes neonctl psql <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> < drizzle/<MIGRATION_FILE>.sql
+```
+
+Local Google OAuth still uses the credentials in `.env.local`; its authorized
+redirect URI must include
+`http://localhost:3000/api/auth/callback/google`. The shell-level
+`DATABASE_URL` above overrides only the database target for that server process.
+
+Before opening a production PR, test at least:
+
+1. `npm test`, `npx tsc --noEmit`, and `npm run build`.
+2. Signed-out access and the expected 401/403 responses from protected APIs.
+3. First Google account claims an approved phone number.
+4. A second Google account claims the same group, sees the one-time shared-RSVP
+   notice, and can read/update the same RSVP.
+5. Group membership never exceeds `maxPartySize` and one email cannot connect
+   to multiple groups.
+6. Removing one account in the admin portal preserves the shared RSVP.
+
+Create test-only groups and phone numbers only inside the disposable branch;
+never add fixtures to production migrations. When testing is complete, stop the
+local server and explicitly delete the branch:
+
+```bash
+npx --yes neonctl branches delete <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID>
+```
+
+Never commit `.env.local`, connection strings, database passwords, OAuth codes,
+or CLI authentication files.
+
 ### 4. Google OAuth
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → **APIs &
@@ -93,15 +179,16 @@ listed in `ADMIN_EMAILS`, then visit `/admin`.
 In `/admin`, paste CSV rows (header optional):
 
 ```csv
-name, phone, max_party_size
-Jane & John Smith, (513) 555-0142, 4
-Alex Doe, 513-555-0199, 2
+names, phones, group
+"Jane Smith; John Smith", "(513) 555-0142; (513) 555-0143", "Core"
+"Alex Doe", "513-555-0199", "Nick Friends"
 ```
 
 - Phone numbers are normalized (formatting/`+1` ignored), so guests can type
   theirs however they like.
 - Re-uploading a phone that already exists **updates** the name and cap and
-  **preserves** any existing claim/RSVP.
+  **preserves** connected accounts and the existing RSVP. A group cannot be
+  reduced below its current number of connected accounts.
 
 ## Deploying to Vercel
 
@@ -111,9 +198,10 @@ Alex Doe, 513-555-0199, 2
    Variables** (use real values). If you created the Neon DB via Vercel Storage,
    `DATABASE_URL` is already there.
 4. Make sure your production redirect URI is in the Google OAuth config.
-5. Deploy. After the first deploy, run `npm run db:push` locally against the
-   production `DATABASE_URL` (or use Neon's SQL editor with
-   `drizzle/0000_*.sql`) to create the tables.
+5. Apply every unapplied SQL migration in `drizzle/` to the production database
+   before deploying code that depends on it. For an existing installation,
+   `0001_multi_account_group_access.sql` backfills current claim owners safely.
+6. Deploy.
 
 ## Swapping in the real video
 
@@ -136,5 +224,8 @@ looks broken while it loads.
   sensitive is committed.
 - Admin API routes re-check `ADMIN_EMAILS` server-side on every request; the
   client `isAdmin` flag is for UI only.
-- The phone-claim is done as a conditional `UPDATE ... WHERE claimed_by_email IS
-  NULL`, so two simultaneous logins can't both claim the same invite.
+- Membership emails are globally unique, enforcing one group per Google account.
+  Group/slot uniqueness plus retrying allocation keeps simultaneous claims at or
+  below the group's `maxPartySize`.
+- Admin account removal deletes only the membership row; the group's shared RSVP
+  is preserved.

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import RotatingBackground from "@/components/RotatingBackground";
 import { SignInButton, SignOutButton } from "@/components/AuthButtons";
 import PhoneClaim from "@/components/PhoneClaim";
+import JoinedGroupNotice from "@/components/JoinedGroupNotice";
 import RsvpForm from "@/components/RsvpForm";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
 
@@ -26,7 +27,12 @@ export const metadata: Metadata = {
 
 const STAR = <span style={{ color: "var(--star)" }}>★</span>;
 
-export default async function EngagementPage() {
+export default async function EngagementPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ joined?: string }>;
+}) {
+  const { joined } = await searchParams;
   const session = await auth();
   const email = session?.user?.email;
   const group = email ? await getClaimedGroup(email) : null;
@@ -138,6 +144,7 @@ export default async function EngagementPage() {
         ) : (
           <Welcome
             firstName={session.user?.name?.split(" ")[0] ?? null}
+            showJoinedNotice={joined === "existing"}
             maxPartySize={group.maxPartySize}
             invitedNames={group.invitedNames}
             groupLabel={group.groupLabel}
@@ -168,12 +175,14 @@ function SignedOut() {
 
 function Welcome({
   firstName,
+  showJoinedNotice,
   maxPartySize,
   invitedNames,
   groupLabel,
   rsvp,
 }: {
   firstName: string | null;
+  showJoinedNotice: boolean;
   maxPartySize: number;
   invitedNames: string[];
   groupLabel: GroupLabel | null | undefined;
@@ -189,6 +198,7 @@ function Welcome({
 
   return (
     <div>
+      {showJoinedNotice && <JoinedGroupNotice />}
       <p
         style={{
           fontSize: "0.9rem",
