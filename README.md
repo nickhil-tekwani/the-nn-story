@@ -69,6 +69,90 @@ npm run db:push      # pushes the schema to your database
 
 (`npm run db:studio` opens a browser GUI to inspect rows.)
 
+#### Safe feature testing with a disposable Neon branch
+
+Never run schema migrations or test RSVPs against the production `main`
+database. Neon branches are copy-on-write clones, so they are suitable for
+testing migrations against realistic data without changing production.
+
+Authenticate the Neon CLI and locate the project and its current branches:
+
+```bash
+npx --yes neonctl auth
+npx --yes neonctl projects list
+npx --yes neonctl branches list --project-id <PROJECT_ID>
+```
+
+If the account belongs to multiple organizations, add `--org-id <ORG_ID>` to
+the project-list command. Do not reuse a preview branch belonging to another PR.
+
+Create a feature-specific branch from `main`. Give manual test branches an
+expiration so they clean themselves up if teardown is forgotten:
+
+```bash
+npx --yes neonctl branches create \
+  --project-id <PROJECT_ID> \
+  --parent main \
+  --name dev/<FEATURE_NAME> \
+  --expires-at <ISO_8601_TIMESTAMP>
+```
+
+Record the returned branch ID, then verify it before applying migrations:
+
+```bash
+npx --yes neonctl branches get <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID>
+```
+
+Keep the development connection string shell-scoped instead of replacing the
+production-like `DATABASE_URL` in `.env.local`. These commands fetch it at
+runtime without printing or committing credentials:
+
+```bash
+env DATABASE_URL="$(npx --yes neonctl connection-string <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> --no-color)" npm run db:push
+
+env DATABASE_URL="$(npx --yes neonctl connection-string <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> --no-color)" npm run dev
+```
+
+For an existing installation, validate the exact checked-in SQL migration on
+the disposable branch rather than using `db:push`. `neonctl psql` requires a
+local `psql` installation:
+
+```bash
+npx --yes neonctl psql <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID> < drizzle/<MIGRATION_FILE>.sql
+```
+
+Local Google OAuth still uses the credentials in `.env.local`; its authorized
+redirect URI must include
+`http://localhost:3000/api/auth/callback/google`. The shell-level
+`DATABASE_URL` above overrides only the database target for that server process.
+
+Before opening a production PR, test at least:
+
+1. `npm test`, `npx tsc --noEmit`, and `npm run build`.
+2. Signed-out access and the expected 401/403 responses from protected APIs.
+3. First Google account claims an approved phone number.
+4. A second Google account claims the same group, sees the one-time shared-RSVP
+   notice, and can read/update the same RSVP.
+5. Group membership never exceeds `maxPartySize` and one email cannot connect
+   to multiple groups.
+6. Removing one account in the admin portal preserves the shared RSVP.
+
+Create test-only groups and phone numbers only inside the disposable branch;
+never add fixtures to production migrations. When testing is complete, stop the
+local server and explicitly delete the branch:
+
+```bash
+npx --yes neonctl branches delete <DEV_BRANCH_ID> \
+  --project-id <PROJECT_ID>
+```
+
+Never commit `.env.local`, connection strings, database passwords, OAuth codes,
+or CLI authentication files.
+
 ### 4. Google OAuth
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → **APIs &
