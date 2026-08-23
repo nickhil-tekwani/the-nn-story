@@ -395,7 +395,15 @@ export default function AdminPortal() {
                   <Td style={{ fontFamily: "monospace", fontSize: "0.78rem", color: MUTED }}>
                     {g.phones.map((p) => <div key={p}>{formatPhone(p)}</div>)}
                   </Td>
-                  <Td>{g.maxPartySize}</Td>
+                  <Td>
+                    <PartyLimitEditor
+                      groupId={g.id}
+                      value={g.maxPartySize}
+                      rsvpPartySize={g.partySize}
+                      connectedAccountCount={g.members.length}
+                      onSaved={load}
+                    />
+                  </Td>
                   <Td style={{ fontSize: "0.78rem", color: MUTED }}>
                     <MemberList group={g} onDone={load} />
                   </Td>
@@ -555,6 +563,112 @@ function MemberList({ group, onDone }: { group: GroupRow; onDone: () => void }) 
         </div>
       ))}
       {error && <div style={{ color: STAR }}>{error}</div>}
+    </div>
+  );
+}
+
+function PartyLimitEditor({
+  groupId,
+  value,
+  rsvpPartySize,
+  connectedAccountCount,
+  onSaved,
+}: {
+  groupId: number;
+  value: number;
+  rsvpPartySize: number | null;
+  connectedAccountCount: number;
+  onSaved: () => void | Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [nextValue, setNextValue] = useState(String(value));
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  function cancel() {
+    setNextValue(String(value));
+    setError(null);
+    setEditing(false);
+  }
+
+  async function save() {
+    const maxPartySize = Number(nextValue);
+    if (!Number.isInteger(maxPartySize) || maxPartySize < 1) {
+      setError("Enter a whole number of at least 1.");
+      return;
+    }
+    if (rsvpPartySize != null && maxPartySize < rsvpPartySize) {
+      setError(`Cannot be below the current RSVP of ${rsvpPartySize}.`);
+      return;
+    }
+    if (maxPartySize < connectedAccountCount) {
+      setError(`Cannot be below the ${connectedAccountCount} connected accounts.`);
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/guests/${groupId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ maxPartySize }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Update failed.");
+        return;
+      }
+      await onSaved();
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        aria-label={`Edit max party size, currently ${value}`}
+        onClick={() => {
+          setNextValue(String(value));
+          setError(null);
+          setEditing(true);
+        }}
+        style={{ background: "none", border: 0, color: INK, cursor: "pointer", font: "inherit", padding: 0, textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: "0.2rem" }}
+      >
+        {value}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ minWidth: "8rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <input
+          type="number"
+          min={Math.max(1, rsvpPartySize ?? 1, connectedAccountCount)}
+          step={1}
+          aria-label="Max party size"
+          value={nextValue}
+          onChange={(event) => setNextValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") void save();
+            if (event.key === "Escape") cancel();
+          }}
+          disabled={saving}
+          autoFocus
+          style={{ width: "3.5rem", border: BORDER, borderRadius: "0.35rem", padding: "0.25rem 0.35rem", font: "inherit", color: INK, background: PAPER }}
+        />
+        <button type="button" onClick={() => void save()} disabled={saving} style={{ border: 0, background: "none", color: INK, cursor: "pointer", padding: "0.2rem", fontWeight: 600 }}>
+          {saving ? "…" : "Save"}
+        </button>
+        <button type="button" onClick={cancel} disabled={saving} style={{ border: 0, background: "none", color: MUTED, cursor: "pointer", padding: "0.2rem" }}>
+          Cancel
+        </button>
+      </div>
+      {error && <div role="alert" style={{ marginTop: "0.3rem", color: STAR, fontSize: "0.72rem", lineHeight: 1.3 }}>{error}</div>}
     </div>
   );
 }
