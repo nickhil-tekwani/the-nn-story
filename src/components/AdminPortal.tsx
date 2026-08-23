@@ -361,7 +361,7 @@ export default function AdminPortal() {
                 <Th sortKey="claimed"   sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Claimed by</Th>
                 <Th sortKey="rsvp"      sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>RSVP</Th>
                 <Th sortKey="attendees" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Attendees</Th>
-                <Th sortKey="hotel"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Hotel</Th>
+                <Th sortKey="hotel"     sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Local?</Th>
                 <Th></Th>
               </tr>
             </thead>
@@ -413,7 +413,7 @@ export default function AdminPortal() {
                       ? g.partyMembers.join(", ")
                       : g.partySize != null ? g.partySize : "—"}
                   </Td>
-                  <Td>{g.attending ? (g.needsHotel ? "Needs hotel" : "Local") : "—"}</Td>
+                  <Td>{g.attending ? (g.needsHotel ? "Out of town" : "Local") : "—"}</Td>
                   <Td>
                     <RowActions groupId={g.id} onEdit={() => setEditingGroup(g)} onDone={load} />
                   </Td>

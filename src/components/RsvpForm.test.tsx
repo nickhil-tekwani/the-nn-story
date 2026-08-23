@@ -17,6 +17,22 @@ function successfulFetch() {
 }
 
 describe("RsvpForm submission method", () => {
+  it("asks whether guests are local without asking about a hotel", () => {
+    render(
+      <RsvpForm
+        maxPartySize={1}
+        invitedNames={["Nickhil"]}
+        initial={null}
+      />,
+    );
+
+    expect(screen.getByText("Are you local to Cincinnati?")).toBeTruthy();
+    expect(screen.queryByText(/hotel/i)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "No, I'm coming from out of town" }));
+    expect(screen.getByPlaceholderText("Where are you coming from?")).toBeTruthy();
+  });
+
   it("uses POST for the guest RSVP endpoint by default", async () => {
     const fetchMock = successfulFetch();
 

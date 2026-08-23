@@ -18,7 +18,7 @@ API routes = the backend).
    - Number already claimed by another Google account → rejected.
    - Match found & unclaimed → bound to your Google account (one account ↔ one
      invite, enforced in the DB).
-3. **Verified** → event details + RSVP form (attending? hotel or local? party
+3. **Verified** → event details + RSVP form (attending? local or out of town? party
    size, capped at the per-household max set by the admin).
 4. **Admins** (emails in `ADMIN_EMAILS`) get `/admin` to upload guests and see
    live RSVP status.

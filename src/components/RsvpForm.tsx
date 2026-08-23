@@ -46,7 +46,6 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
-const OUT_OF_TOWN_LABELS: GroupLabel[] = ["Nikki Friends", "Nick Friends"];
 const DIETARY_LABELS: GroupLabel[] = ["Nikki Friends", "Nick Friends"];
 
 function buildGuests(invitedNames: string[], maxPartySize: number, initial: InitialRsvp): GuestEntry[] {
@@ -433,31 +432,25 @@ export default function RsvpForm({
             </fieldset>
           )}
 
-          {/* Hotel */}
+          {/* Local / out of town */}
           <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-            <legend style={legendStyle}>Where are you staying?</legend>
+            <legend style={legendStyle}>Are you local to Cincinnati?</legend>
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <Toggle active={needsHotel} onClick={() => { setNeedsHotel(true); setSaved(false); }}>
-                I&apos;ll need a hotel
-              </Toggle>
               <Toggle active={!needsHotel} onClick={() => { setNeedsHotel(false); setSaved(false); }}>
-                I&apos;m local
+                Yes, I&apos;m local
+              </Toggle>
+              <Toggle active={needsHotel} onClick={() => { setNeedsHotel(true); setSaved(false); }}>
+                No, I&apos;m coming from out of town
               </Toggle>
             </div>
             {needsHotel && (
-              <>
-                <input
-                  type="text"
-                  value={hometown}
-                  onChange={(e) => { setHometown(e.target.value); setSaved(false); }}
-                  placeholder="Where are you based?"
-                  style={{ ...inputStyle, marginTop: "0.6rem" }}
-                />
-                <p style={{ fontSize: "0.82rem", color: "var(--ink-muted)", margin: "0.6rem 0 0", lineHeight: 1.55 }}>
-                  {groupLabel && OUT_OF_TOWN_LABELS.includes(groupLabel) && "Plan to stay in downtown Cincinnati. "}
-                  Depending on out-of-town attendance, we may put together a room block — stay tuned!
-                </p>
-              </>
+              <input
+                type="text"
+                value={hometown}
+                onChange={(e) => { setHometown(e.target.value); setSaved(false); }}
+                placeholder="Where are you coming from?"
+                style={{ ...inputStyle, marginTop: "0.6rem" }}
+              />
             )}
           </fieldset>
         </>
