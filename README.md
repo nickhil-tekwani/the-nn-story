@@ -15,11 +15,13 @@ API routes = the backend).
 2. **Signed in, invite not yet verified** → enter the phone number where you got
    your invite. It's matched against the admin-uploaded guest list.
    - Number not on the list → rejected.
-   - Number already claimed by another Google account → rejected.
-   - Match found & unclaimed → bound to your Google account (one account ↔ one
-     invite, enforced in the DB).
-3. **Verified** → event details + RSVP form (attending? local or out of town? party
-   size, capped at the per-household max set by the admin).
+   - Approved number and group has room → connect the Google account to the
+     group's shared invite and RSVP.
+   - One Google account can belong to only one group. A group can connect up to
+     its invited party size in distinct Google accounts.
+   - Secondary members see a one-time notice that they joined an existing group.
+3. **Verified** → event details + the group's shared RSVP form (attending? local
+   or out of town? party size, capped at the per-household max set by the admin).
 4. **Admins** (emails in `ADMIN_EMAILS`) get `/admin` to upload guests and see
    live RSVP status.
 
@@ -93,15 +95,16 @@ listed in `ADMIN_EMAILS`, then visit `/admin`.
 In `/admin`, paste CSV rows (header optional):
 
 ```csv
-name, phone, max_party_size
-Jane & John Smith, (513) 555-0142, 4
-Alex Doe, 513-555-0199, 2
+names, phones, group
+"Jane Smith; John Smith", "(513) 555-0142; (513) 555-0143", "Core"
+"Alex Doe", "513-555-0199", "Nick Friends"
 ```
 
 - Phone numbers are normalized (formatting/`+1` ignored), so guests can type
   theirs however they like.
 - Re-uploading a phone that already exists **updates** the name and cap and
-  **preserves** any existing claim/RSVP.
+  **preserves** connected accounts and the existing RSVP. A group cannot be
+  reduced below its current number of connected accounts.
 
 ## Deploying to Vercel
 
@@ -111,9 +114,10 @@ Alex Doe, 513-555-0199, 2
    Variables** (use real values). If you created the Neon DB via Vercel Storage,
    `DATABASE_URL` is already there.
 4. Make sure your production redirect URI is in the Google OAuth config.
-5. Deploy. After the first deploy, run `npm run db:push` locally against the
-   production `DATABASE_URL` (or use Neon's SQL editor with
-   `drizzle/0000_*.sql`) to create the tables.
+5. Apply every unapplied SQL migration in `drizzle/` to the production database
+   before deploying code that depends on it. For an existing installation,
+   `0001_multi_account_group_access.sql` backfills current claim owners safely.
+6. Deploy.
 
 ## Swapping in the real video
 
@@ -136,5 +140,8 @@ looks broken while it loads.
   sensitive is committed.
 - Admin API routes re-check `ADMIN_EMAILS` server-side on every request; the
   client `isAdmin` flag is for UI only.
-- The phone-claim is done as a conditional `UPDATE ... WHERE claimed_by_email IS
-  NULL`, so two simultaneous logins can't both claim the same invite.
+- Membership emails are globally unique, enforcing one group per Google account.
+  Group/slot uniqueness plus retrying allocation keeps simultaneous claims at or
+  below the group's `maxPartySize`.
+- Admin account removal deletes only the membership row; the group's shared RSVP
+  is preserved.

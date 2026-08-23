@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { auth } from "@/auth";
-import { db, groups, groupPhones, rsvps } from "@/db";
+import { db, groupMembers, groups, groupPhones, rsvps } from "@/db";
 import { isAdminEmail } from "@/lib/admin";
 import { normalizePhone } from "@/lib/phone";
 import { GROUP_LABELS, type GroupLabel } from "@/db/schema";
@@ -20,6 +20,7 @@ export async function GET() {
 
   const groupRows = await db.select().from(groups).orderBy(groups.id);
   const phoneRows = await db.select().from(groupPhones);
+  const memberRows = await db.select().from(groupMembers).orderBy(groupMembers.joinedAt);
   const rsvpRows = await db.select().from(rsvps);
 
   const phonesByGroup = new Map<number, string[]>();
@@ -30,6 +31,12 @@ export async function GET() {
   }
   const rsvpByGroup = new Map<number, (typeof rsvpRows)[number]>();
   for (const r of rsvpRows) rsvpByGroup.set(r.groupId, r);
+  const membersByGroup = new Map<number, (typeof memberRows)[number][]>();
+  for (const member of memberRows) {
+    const list = membersByGroup.get(member.groupId) ?? [];
+    list.push(member);
+    membersByGroup.set(member.groupId, list);
+  }
 
   const result = groupRows.map((g) => {
     const r = rsvpByGroup.get(g.id);
@@ -39,8 +46,12 @@ export async function GET() {
       phones: phonesByGroup.get(g.id) ?? [],
       maxPartySize: g.maxPartySize,
       groupLabel: g.groupLabel ?? null,
-      claimedByEmail: g.claimedByEmail,
-      claimedByPhone: g.claimedByPhone,
+      members: (membersByGroup.get(g.id) ?? []).map((member) => ({
+        id: member.id,
+        email: member.email,
+        phone: member.phone,
+        joinedAt: member.joinedAt,
+      })),
       attending: r?.attending ?? null,
       needsHotel: r?.needsHotel ?? null,
       hometown: r?.hometown ?? null,
@@ -135,6 +146,16 @@ export async function POST(req: Request) {
     if (existingGroupIds.length === 1) {
       // Update the existing group and add any new phones.
       const groupId = existingGroupIds[0];
+      const [{ memberCount }] = await db
+        .select({ memberCount: sql<number>`count(*)::int` })
+        .from(groupMembers)
+        .where(eq(groupMembers.groupId, groupId));
+      if (memberCount > maxPartySize) {
+        errors.push(
+          `Line ${lineNo} (${names[0]}): ${memberCount} Google accounts are connected, so the group cannot be reduced to ${maxPartySize} people. Remove accounts first.`,
+        );
+        continue;
+      }
       await db
         .update(groups)
         .set({ invitedNames: names, maxPartySize, groupLabel })

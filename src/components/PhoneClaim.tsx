@@ -51,6 +51,10 @@ export default function PhoneClaim() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); track("phone_claim_error", { reason: data.error || "unknown" }); return; }
       track("phone_claim_success");
+      if (data.joinedExistingGroup) {
+        router.replace("/engagement?joined=existing");
+        return;
+      }
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
