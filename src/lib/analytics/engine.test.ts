@@ -95,6 +95,17 @@ describe("analytics semantic engine", () => {
     ]);
   });
 
+  it("reports unique attending groups and attending individuals by group label", () => {
+    const result = runAnalyticsQuery(rows, query({
+      measures: ["attending_groups", "attending_individuals"],
+      dimensions: ["group_label"],
+      filters: [{ field: "current_rsvp_status", operator: "equals", value: "Attending" }],
+    }));
+    expect(result.rows).toEqual([
+      { group_label: "Core", attending_groups: 1, attending_individuals: 2 },
+    ]);
+  });
+
   it("ignores unanswered groups when averaging attending party size", () => {
     const result = runAnalyticsQuery(rows, query({ measures: ["average_attending_party_size"] }));
     expect(result.rows[0].average_attending_party_size).toBe(2);

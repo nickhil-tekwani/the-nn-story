@@ -38,5 +38,6 @@ describe("AnalyticsPortal", () => {
     expect(screen.getByRole("button", { name: "Build a report" })).toBeTruthy();
     expect(screen.queryByText("1. Dataset")).toBeNull();
     expect(screen.getByRole("option", { name: "Response latency" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Attendance by group label" })).toBeTruthy();
   });
 });
