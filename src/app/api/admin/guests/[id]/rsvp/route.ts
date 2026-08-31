@@ -41,7 +41,9 @@ export async function PUT(
     email: adminEmail,
     groupId,
     properties: {
-      ...result.summary,
+      schemaVersion: 2,
+      source: "admin",
+      ...result.analytics,
       guestVerified: Boolean(group.claimedByEmail),
     },
   });

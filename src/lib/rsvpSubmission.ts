@@ -9,8 +9,22 @@ export type SavedRsvpSummary = {
   partySize: number;
 };
 
+export type AnalyticsRsvpSnapshot = {
+  attending: boolean;
+  partySize: number;
+  locality: "local" | "out_of_town" | "not_attending";
+};
+
 export type SaveRsvpResult =
-  | { ok: true; summary: SavedRsvpSummary }
+  | {
+      ok: true;
+      summary: SavedRsvpSummary;
+      analytics: {
+        action: "first_response" | "update";
+        before: AnalyticsRsvpSnapshot | null;
+        after: AnalyticsRsvpSnapshot;
+      };
+    }
   | { ok: false; status: 400; error: string };
 
 /**
@@ -21,6 +35,11 @@ export async function saveRsvpSubmission(
   group: RsvpGroup,
   body: unknown,
 ): Promise<SaveRsvpResult> {
+  const [previousRsvp] = await db
+    .select()
+    .from(rsvps)
+    .where(eq(rsvps.groupId, group.id))
+    .limit(1);
   const data = body && typeof body === "object"
     ? body as Record<string, unknown>
     : {};
@@ -128,6 +147,29 @@ export async function saveRsvpSubmission(
       attending: values.attending,
       needsHotel: values.needsHotel,
       partySize: values.partySize,
+    },
+    analytics: {
+      action: previousRsvp ? "update" : "first_response",
+      before: previousRsvp
+        ? {
+            attending: previousRsvp.attending,
+            partySize: previousRsvp.attending ? previousRsvp.partySize : 0,
+            locality: !previousRsvp.attending
+              ? "not_attending"
+              : previousRsvp.needsHotel
+                ? "out_of_town"
+                : "local",
+          }
+        : null,
+      after: {
+        attending: values.attending,
+        partySize: values.partySize,
+        locality: !values.attending
+          ? "not_attending"
+          : values.needsHotel
+            ? "out_of_town"
+            : "local",
+      },
     },
   };
 }

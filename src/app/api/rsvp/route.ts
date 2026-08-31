@@ -39,7 +39,11 @@ export async function POST(req: Request) {
   await logEvent("rsvp_submitted", {
     email: session?.user?.email,
     groupId: group.id,
-    properties: result.summary,
+    properties: {
+      schemaVersion: 2,
+      source: "guest",
+      ...result.analytics,
+    },
   });
 
   return NextResponse.json({ ok: true });

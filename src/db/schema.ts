@@ -146,6 +146,21 @@ export const events = pgTable("events", {
   groupId: integer("group_id").references(() => groups.id, { onDelete: "set null" }),
   properties: jsonb("properties").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  eventCreatedIdx: index("events_event_created_idx").on(t.event, t.createdAt),
+  groupCreatedIdx: index("events_group_created_idx").on(t.groupId, t.createdAt),
+}));
+
+/** Shared, admin-authored analytics configurations. */
+export const analyticsReports = pgTable("analytics_reports", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  queryConfig: jsonb("query_config").$type<Record<string, unknown>>().notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type Group = typeof groups.$inferSelect;
@@ -153,3 +168,4 @@ export type GroupPhone = typeof groupPhones.$inferSelect;
 export type GroupMember = typeof groupMembers.$inferSelect;
 export type Rsvp = typeof rsvps.$inferSelect;
 export type Event = typeof events.$inferSelect;
+export type AnalyticsReport = typeof analyticsReports.$inferSelect;
