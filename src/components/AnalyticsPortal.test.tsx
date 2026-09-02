@@ -39,5 +39,6 @@ describe("AnalyticsPortal", () => {
     expect(screen.queryByText("1. Dataset")).toBeNull();
     expect(screen.getByRole("option", { name: "Response latency" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Attendance by group label" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Night-time attendance" })).toBeTruthy();
   });
 });

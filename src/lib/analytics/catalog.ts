@@ -23,6 +23,7 @@ export const DATASETS: Record<AnalyticsDataset, { label: string; description: st
   invitations: { label: "Invitations", description: "One row per invited group." },
   current_rsvps: { label: "Current RSVPs", description: "The latest RSVP state for every invited group." },
   attendees: { label: "Attendees", description: "One row per currently attending named guest." },
+  night_time_attendees: { label: "Night-time attendees", description: "Yes-RSVP names from the two friend groups and eligible family friends, plus the four included Core attendees." },
   connected_accounts: { label: "Connected accounts", description: "One privacy-safe row per connected account." },
   rsvp_activity: { label: "RSVP activity", description: "Guest and admin RSVP activity over time." },
 };
@@ -67,6 +68,7 @@ export const MEASURES: Record<string, MeasureDefinition> = {
   acceptance_rate: { label: "Individual acceptance rate", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "attending_individuals", denominator: "responded_individuals" },
   capacity_utilization: { label: "Capacity utilization", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "attending_individuals", denominator: "invited_individuals" },
   attendee_count: { label: "Attendees", type: "number", datasets: ["attendees"], aggregate: "sum", field: "attendee_count" },
+  night_time_attendee_count: { label: "Night-time attendees", type: "number", datasets: ["night_time_attendees"], aggregate: "sum", field: "attendee_count" },
   account_count: { label: "Connected accounts", type: "number", datasets: ["connected_accounts"], aggregate: "sum", field: "connected_accounts" },
   activity_count: { label: "RSVP activities", type: "number", datasets: ["rsvp_activity"], aggregate: "sum", field: "activity_count" },
   active_groups: { label: "Groups with activity", type: "number", datasets: ["rsvp_activity"], aggregate: "distinct", field: "group_id" },
@@ -96,6 +98,10 @@ export const DETAIL_COLUMNS: Record<AnalyticsDataset, Array<{ key: string; label
     { key: "group_names", label: "Invited group", type: "string" },
     { key: "group_label", label: "Group label", type: "string" },
     { key: "locality", label: "Locality", type: "string" },
+  ],
+  night_time_attendees: [
+    { key: "attendee_name", label: "Attendee", type: "string" },
+    { key: "group_label", label: "Included from", type: "string" },
   ],
   connected_accounts: [
     { key: "group_names", label: "Invited group", type: "string" },

@@ -1,5 +1,6 @@
 import { db, events, groupMembers, groups, rsvps } from "@/db";
 import type { AnalyticsDataset, AnalyticsRow } from "./types";
+import { selectNightTimeAttendees } from "./nightTime";
 
 const CHICAGO = "America/Chicago";
 
@@ -104,6 +105,8 @@ export async function loadAnalyticsRows(dataset: AnalyticsDataset): Promise<Anal
   });
 
   if (dataset === "invitations" || dataset === "current_rsvps") return currentRows;
+
+  if (dataset === "night_time_attendees") return selectNightTimeAttendees(groupRows, rsvpRows);
 
   const currentByGroup = new Map(currentRows.map((row) => [Number(row.group_id), row]));
 

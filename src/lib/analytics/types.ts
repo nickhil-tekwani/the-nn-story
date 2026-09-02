@@ -4,6 +4,7 @@ export type AnalyticsDataset =
   | "invitations"
   | "current_rsvps"
   | "attendees"
+  | "night_time_attendees"
   | "connected_accounts"
   | "rsvp_activity";
 

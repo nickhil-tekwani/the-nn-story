@@ -41,6 +41,7 @@ const CANNED: Array<{ key: string; name: string; description: string; visualizat
   { key: "funnel", name: "Invitation funnel", description: "Invited groups through claim, response, and attendance.", visualization: "funnel", query: { version: 1, dataset: "current_rsvps", measures: ["invited_groups", "claimed_groups", "responded_groups", "attending_groups"], dimensions: [], filters: [], limit: 20, mode: "aggregate" } },
   { key: "size", name: "Group-size analysis", description: "Party-size distribution and capacity use.", visualization: "bar", query: { version: 1, dataset: "current_rsvps", measures: ["invited_groups", "average_invited_size", "average_attending_party_size", "capacity_utilization"], dimensions: ["invited_size_bucket"], filters: [], limit: 20, mode: "aggregate" } },
   { key: "attendance_by_group", name: "Attendance by group label", description: "Unique attending groups and total attending individuals for each group label.", visualization: "table", query: { version: 1, dataset: "current_rsvps", measures: ["attending_groups", "attending_individuals"], dimensions: ["group_label"], filters: [{ field: "current_rsvp_status", operator: "equals", value: "Attending" }], sort: [{ field: "group_label", direction: "asc" }], limit: 20, mode: "aggregate" } },
+  { key: "night_time", name: "Night-time attendance", description: "Yes-RSVP attendees from Nick Friends and Nikki Friends, the eligible Yes-RSVP attendees from Nikki Fam Friends, plus Nickhil, Nikki, Natasha, and Abhi from Core.", visualization: "table", query: { version: 1, dataset: "night_time_attendees", measures: [], dimensions: [], filters: [], sort: [{ field: "attendee_name", direction: "asc" }], limit: 500, mode: "detail" } },
   { key: "outstanding", name: "Outstanding invitations", description: "Groups that have not submitted an RSVP.", visualization: "bar", query: { version: 1, dataset: "current_rsvps", measures: ["outstanding_groups", "awaiting_individuals"], dimensions: ["claim_status"], filters: [{ field: "current_rsvp_status", operator: "equals", value: "Awaiting response" }], limit: 20, mode: "aggregate" } },
   { key: "latency", name: "Response latency", description: "Time from first claim to first guest response.", visualization: "bar", query: { version: 1, dataset: "rsvp_activity", measures: ["median_response_hours", "active_groups"], dimensions: ["group_label"], filters: [{ field: "activity_source", operator: "equals", value: "Guest" }, { field: "activity_type", operator: "equals", value: "First response" }], limit: 20, mode: "aggregate" } },
 ];
@@ -214,6 +215,7 @@ export default function AnalyticsPortal() {
   };
 
   const canned = CANNED.find((item) => item.key === selectedCanned);
+  const isNightTimeReport = selectedCanned === "night_time";
   const availableMeasures = catalog?.measures.filter((item) => item.datasets.includes(query.dataset)) ?? [];
   const availableDimensions = catalog?.dimensions.filter((item) => item.datasets.includes(query.dataset)) ?? [];
   const querySummary = useMemo(() => {
@@ -260,8 +262,9 @@ export default function AnalyticsPortal() {
 
           {loading ? <div className={styles.loading}>Calculating…</div> : error ? <div className={styles.error}>{error}</div> : result && <>
             <Chart result={result} visualization={visualization} onSelect={(field, value) => openDrilldown({ field, operator: "equals", value })} />
+            {isNightTimeReport && <div className={styles.kpis}><div className={styles.kpi}><span className={styles.kpiValue}>{result.totalRows.toLocaleString()}</span><span className={styles.kpiLabel}>Night-time attendees</span></div></div>}
             <ResultTable result={result} />
-            <div className={styles.meta}><span>Updated {formatValue(result.generatedAt, "datetime")} CT</span><button className={styles.quiet} onClick={() => openDrilldown()} disabled={detailLoading}>{detailLoading ? "Loading…" : "View matching groups"}</button></div>
+            <div className={styles.meta}><span>Updated {formatValue(result.generatedAt, "datetime")} CT</span>{!isNightTimeReport && <button className={styles.quiet} onClick={() => openDrilldown()} disabled={detailLoading}>{detailLoading ? "Loading…" : "View matching groups"}</button>}</div>
             {result.caveats?.map((caveat) => <p className={styles.caveat} key={caveat}>{caveat}</p>)}
           </>}
         </section>
