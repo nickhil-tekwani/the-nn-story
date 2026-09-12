@@ -95,15 +95,19 @@ describe("analytics semantic engine", () => {
     ]);
   });
 
-  it("reports unique attending groups and attending individuals by group label", () => {
-    const result = runAnalyticsQuery(rows, query({
-      measures: ["attending_groups", "attending_individuals"],
+  it("reports attendance and acceptance out of all invited groups by group label", () => {
+    const result = runAnalyticsQuery([
+      ...rows,
+      { ...rows[2], group_id: 4, group_label: "Core" },
+    ], validateAnalyticsQuery(query({
+      measures: ["attending_groups", "attending_individuals", "group_acceptance_rate"],
       dimensions: ["group_label"],
-      filters: [{ field: "current_rsvp_status", operator: "equals", value: "Attending" }],
-    }));
+    })));
     expect(result.rows).toEqual([
-      { group_label: "Core", attending_groups: 1, attending_individuals: 2 },
+      { group_label: "Core", attending_groups: 1, attending_individuals: 2, group_acceptance_rate: 1 / 3 },
+      { group_label: "Nick Friends", attending_groups: 0, attending_individuals: 0, group_acceptance_rate: 0 },
     ]);
+    expect(result.columns).toContainEqual({ key: "group_acceptance_rate", label: "% of groups that accepted", type: "percent" });
   });
 
   it("ignores unanswered groups when averaging attending party size", () => {

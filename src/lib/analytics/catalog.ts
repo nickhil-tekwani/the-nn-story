@@ -65,6 +65,7 @@ export const MEASURES: Record<string, MeasureDefinition> = {
   average_invited_size: { label: "Average invited size", type: "number", datasets: CURRENT, aggregate: "average", field: "invited_individuals" },
   average_attending_party_size: { label: "Average attending party size", type: "number", datasets: CURRENT, aggregate: "average", field: "attending_party_size" },
   response_rate: { label: "Group response rate", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "responded_groups", denominator: "invited_groups" },
+  group_acceptance_rate: { label: "% of groups that accepted", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "attending_groups", denominator: "invited_groups" },
   acceptance_rate: { label: "Individual acceptance rate", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "attending_individuals", denominator: "responded_individuals" },
   capacity_utilization: { label: "Capacity utilization", type: "percent", datasets: CURRENT, aggregate: "ratio", numerator: "attending_individuals", denominator: "invited_individuals" },
   attendee_count: { label: "Attendees", type: "number", datasets: ["attendees"], aggregate: "sum", field: "attendee_count" },
