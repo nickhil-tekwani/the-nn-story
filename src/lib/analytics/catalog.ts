@@ -73,7 +73,6 @@ export const MEASURES: Record<string, MeasureDefinition> = {
   account_count: { label: "Connected accounts", type: "number", datasets: ["connected_accounts"], aggregate: "sum", field: "connected_accounts" },
   activity_count: { label: "RSVP activities", type: "number", datasets: ["rsvp_activity"], aggregate: "sum", field: "activity_count" },
   active_groups: { label: "Groups with activity", type: "number", datasets: ["rsvp_activity"], aggregate: "distinct", field: "group_id" },
-  median_response_hours: { label: "Median response time", type: "hours", datasets: ["rsvp_activity"], aggregate: "median", field: "response_hours" },
 };
 
 export const DETAIL_COLUMNS: Record<AnalyticsDataset, Array<{ key: string; label: string; type: ValueType }>> = {

@@ -119,7 +119,8 @@ export const rsvps = pgTable(
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
     attending: boolean("attending").notNull(),
-    // true = needs a hotel, false = already in the Cincinnati area
+    // Legacy name: true means out of town, false means local to Cincinnati.
+    // Actual lodging choice lives in groupLodgingPlans.
     needsHotel: boolean("needs_hotel").notNull().default(false),
     partySize: integer("party_size").notNull(),
     partyMembers: text("party_members").array().notNull().default([]),
@@ -163,9 +164,107 @@ export const analyticsReports = pgTable("analytics_reports", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const LODGING_TYPES = ["hotel", "friend_or_family", "undecided"] as const;
+export type LodgingType = (typeof LODGING_TYPES)[number];
+
+export const TRAVEL_DIRECTIONS = ["arrival", "departure"] as const;
+export type TravelDirection = (typeof TRAVEL_DIRECTIONS)[number];
+
+export const TRAVEL_MODES = ["flight", "bus", "drive", "other", "undecided"] as const;
+export type TravelMode = (typeof TRAVEL_MODES)[number];
+
+export const TIME_PERIODS = ["morning", "afternoon", "evening", "night"] as const;
+export type TimePeriod = (typeof TIME_PERIODS)[number];
+
+/** Canonical hotel options shared by eligible out-of-town groups. */
+export const hotels = pgTable(
+  "hotels",
+  {
+    id: serial("id").primaryKey(),
+    canonicalName: text("canonical_name").notNull(),
+    locality: text("locality").notNull(),
+    region: text("region").notNull().default("OH"),
+    normalizedKey: text("normalized_key").notNull(),
+    createdByGroupId: integer("created_by_group_id").references(() => groups.id, { onDelete: "set null" }),
+    isArchived: boolean("is_archived").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    normalizedKeyIdx: uniqueIndex("hotels_normalized_key_idx").on(t.normalizedKey),
+    activeIdx: index("hotels_active_idx").on(t.isArchived, t.canonicalName),
+  }),
+);
+
+/** One shared lodging answer per invitation group. */
+export const groupLodgingPlans = pgTable(
+  "group_lodging_plans",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    lodgingType: text("lodging_type").$type<LodgingType>().notNull(),
+    hotelId: integer("hotel_id").references(() => hotels.id, { onDelete: "set null" }),
+    localArea: text("local_area"),
+    revision: integer("revision").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    groupIdx: uniqueIndex("group_lodging_plans_group_idx").on(t.groupId),
+    hotelIdx: index("group_lodging_plans_hotel_idx").on(t.hotelId),
+    lodgingShape: check(
+      "group_lodging_plans_shape",
+      sql`(${t.lodgingType} = 'hotel' and ${t.hotelId} is not null and ${t.localArea} is null)
+        or (${t.lodgingType} = 'friend_or_family' and ${t.hotelId} is null and ${t.localArea} is not null)
+        or (${t.lodgingType} = 'undecided' and ${t.hotelId} is null and ${t.localArea} is null)`,
+    ),
+  }),
+);
+
+/** Independent inbound/outbound travel legs so modes can differ. */
+export const groupTravelLegs = pgTable(
+  "group_travel_legs",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    direction: text("direction").$type<TravelDirection>().notNull(),
+    mode: text("mode").$type<TravelMode>().notNull(),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    travelDate: text("travel_date"),
+    timePeriod: text("time_period").$type<TimePeriod>(),
+    airlineCode: text("airline_code"),
+    otherAirlineName: text("other_airline_name"),
+    flightNumber: text("flight_number"),
+    revision: integer("revision").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    groupDirectionIdx: uniqueIndex("group_travel_legs_group_direction_idx").on(t.groupId, t.direction),
+    groupIdx: index("group_travel_legs_group_idx").on(t.groupId),
+    directionValid: check("group_travel_legs_direction_valid", sql`${t.direction} in ('arrival', 'departure')`),
+    modeValid: check("group_travel_legs_mode_valid", sql`${t.mode} in ('flight', 'bus', 'drive', 'other', 'undecided')`),
+    timePeriodValid: check("group_travel_legs_time_period_valid", sql`${t.timePeriod} is null or ${t.timePeriod} in ('morning', 'afternoon', 'evening', 'night')`),
+    legShape: check(
+      "group_travel_legs_shape",
+      sql`(${t.mode} = 'flight' and ${t.scheduledAt} is not null and ${t.airlineCode} is not null and ${t.travelDate} is null and ${t.timePeriod} is null)
+        or (${t.mode} = 'bus' and ${t.scheduledAt} is not null and ${t.airlineCode} is null and ${t.travelDate} is null and ${t.timePeriod} is null)
+        or (${t.mode} = 'drive' and ${t.scheduledAt} is null and ${t.airlineCode} is null and ${t.travelDate} is not null and ${t.timePeriod} is not null)
+        or (${t.mode} in ('other', 'undecided') and ${t.scheduledAt} is null and ${t.airlineCode} is null and ${t.travelDate} is null and ${t.timePeriod} is null)`,
+    ),
+  }),
+);
+
 export type Group = typeof groups.$inferSelect;
 export type GroupPhone = typeof groupPhones.$inferSelect;
 export type GroupMember = typeof groupMembers.$inferSelect;
 export type Rsvp = typeof rsvps.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type AnalyticsReport = typeof analyticsReports.$inferSelect;
+export type Hotel = typeof hotels.$inferSelect;
+export type GroupLodgingPlan = typeof groupLodgingPlans.$inferSelect;
+export type GroupTravelLeg = typeof groupTravelLegs.$inferSelect;

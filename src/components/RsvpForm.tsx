@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { track } from "@/lib/umami";
 import type { DietaryInfo, GroupLabel } from "@/db/schema";
 
@@ -110,6 +111,7 @@ export default function RsvpForm({
   confirmLabel?: string;
   onSaved?: () => void | Promise<void>;
 }) {
+  const router = useRouter();
   const [attending, setAttending] = useState<boolean>(initial?.attending ?? true);
   const [needsHotel, setNeedsHotel] = useState<boolean>(initial?.needsHotel ?? false);
   const [hometown, setHometown] = useState<string>(initial?.hometown ?? "");
@@ -254,6 +256,9 @@ export default function RsvpForm({
       setDisplayedRsvp({ attending, partySize });
       track("rsvp_submitted", { attending, guestCount: partySize, needsHotel });
       await onSaved?.();
+      // Eligibility-dependent server UI (including the /stay link) must reflect
+      // the just-saved RSVP without asking the guest to reload manually.
+      router.refresh();
     } catch {
       setError("Network error. Please try again.");
     } finally {
