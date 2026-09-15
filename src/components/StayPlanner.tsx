@@ -129,7 +129,7 @@ function getChronologyWarning(legs: Leg[]) {
 }
 
 function RecommendationLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+  return <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className={styles.externalArrow} aria-hidden="true">↗</span></a>;
 }
 
 function Recommendations() {
@@ -149,7 +149,7 @@ function Recommendations() {
       </article>
       <article className={styles.recommendation}>
         <h4><RecommendationLink href="https://maps.app.goo.gl/QV1vW2kFKbmvLZy56">Mikey&apos;s Late Night Slice</RecommendationLink></h4>
-        <p>Technically a Columbus spot, but our pick for the best thin pizza by the slice.</p>
+        <p>Technically a Columbus classic, but they have a location in downtown Cincy—our pick for the best thin pizza by the slice.</p>
       </article>
     </div>
 

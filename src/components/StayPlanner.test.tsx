@@ -29,6 +29,7 @@ describe("StayPlanner", () => {
     expect(screen.getByRole("link", { name: "Revel OTR Urban Winery" }).getAttribute("href")).toBe("https://maps.app.goo.gl/Se3ApNdUsJJ6kABM6");
     expect(screen.getByRole("link", { name: "Bar Saeso" }).getAttribute("href")).toBe("https://maps.app.goo.gl/AHCdAKqeyoByYCio6");
     expect(screen.getByRole("link", { name: "Oktoberfest Zinzinnati" }).getAttribute("href")).toBe("https://oktoberfestzinzinnati.com/festival-information/");
+    expect(screen.getByText(/Technically a Columbus classic, but they have a location in downtown Cincy/)).toBeTruthy();
   });
 
   it("opens the first unanswered section to keep the form progressive", () => {

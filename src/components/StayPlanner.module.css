@@ -34,7 +34,9 @@
 .recommendations h2 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1.35rem; font-weight: 400; }
 .recommendations h3 { margin: 1.15rem 0 .55rem; color: rgba(248,243,236,.7); font-size: .7rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
 .recommendations h4 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1rem; font-weight: 400; }
-.recommendations a { color: #fff8ef; text-decoration-color: rgba(248,243,236,.35); text-underline-offset: .18em; }
+.recommendations a { color: #fff8ef; text-decoration-line: underline; text-decoration-thickness: 1px; text-decoration-color: rgba(248,243,236,.75); text-underline-offset: .2em; }
+.recommendations a:hover, .recommendations a:focus-visible { color: #fff; text-decoration-thickness: 2px; }
+.externalArrow { display: inline-block; margin-left: .3em; color: var(--star); font-family: var(--font-pt), serif; font-size: .8em; text-decoration: none; }
 .recommendations p { margin: .4rem 0 0; color: rgba(248,243,236,.65); font-size: .74rem; line-height: 1.5; }
 .recommendationIntro { max-width: 38rem; }
 .recommendationGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
