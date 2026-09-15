@@ -8,6 +8,7 @@ import PhoneClaim from "@/components/PhoneClaim";
 import JoinedGroupNotice from "@/components/JoinedGroupNotice";
 import RsvpForm from "@/components/RsvpForm";
 import { getClaimedGroup, getRsvp } from "@/lib/guest";
+import { isStayEligibleRsvp } from "@/lib/stay";
 
 const OG_IMAGE = "https://cy6irvlsob9pkzzc.public.blob.vercel-storage.com/nikkinickhill-66.jpg";
 
@@ -30,9 +31,9 @@ const STAR = <span style={{ color: "var(--star)" }}>★</span>;
 export default async function EngagementPage({
   searchParams,
 }: {
-  searchParams: Promise<{ joined?: string }>;
+  searchParams: Promise<{ joined?: string; stay?: string }>;
 }) {
-  const { joined } = await searchParams;
+  const { joined, stay } = await searchParams;
   const session = await auth();
   const email = session?.user?.email;
   const group = email ? await getClaimedGroup(email) : null;
@@ -145,6 +146,7 @@ export default async function EngagementPage({
           <Welcome
             firstName={session.user?.name?.split(" ")[0] ?? null}
             showJoinedNotice={joined === "existing"}
+            showStayUnavailable={stay === "unavailable"}
             maxPartySize={group.maxPartySize}
             invitedNames={group.invitedNames}
             groupLabel={group.groupLabel}
@@ -176,6 +178,7 @@ function SignedOut() {
 function Welcome({
   firstName,
   showJoinedNotice,
+  showStayUnavailable,
   maxPartySize,
   invitedNames,
   groupLabel,
@@ -183,6 +186,7 @@ function Welcome({
 }: {
   firstName: string | null;
   showJoinedNotice: boolean;
+  showStayUnavailable: boolean;
   maxPartySize: number;
   invitedNames: string[];
   groupLabel: GroupLabel | null | undefined;
@@ -195,10 +199,16 @@ function Welcome({
   } | null;
 }) {
   const showAfterParty = groupLabel === "Nick Friends" || groupLabel === "Nikki Friends";
+  const showStay = isStayEligibleRsvp(groupLabel, rsvp);
 
   return (
     <div>
       {showJoinedNotice && <JoinedGroupNotice />}
+      {showStayUnavailable && (
+        <p style={{ margin: "0 0 1rem", padding: ".7rem .85rem", borderRadius: ".6rem", background: "rgba(193,18,31,.06)", color: "var(--ink-muted)", fontSize: ".8rem", lineHeight: 1.45 }}>
+          The stay page is available to attending, out-of-town guests in selected groups. Update your RSVP here if your plans changed.
+        </p>
+      )}
       <p
         style={{
           fontSize: "0.9rem",
@@ -212,6 +222,14 @@ function Welcome({
       <EventDetails showPastelColors={showAfterParty} />
       {showAfterParty && <AfterPartyDetails />}
       <RsvpForm maxPartySize={maxPartySize} invitedNames={invitedNames} groupLabel={groupLabel} initial={rsvp} />
+      {showStay && (
+        <Link
+          href="/stay"
+          style={{ display: "block", marginTop: "1rem", borderRadius: "999px", background: "rgba(193,18,31,.075)", color: "var(--star)", padding: ".75rem 1rem", textAlign: "center", textDecoration: "none", fontSize: ".86rem" }}
+        >
+          Plan your Cincinnati stay →
+        </Link>
+      )}
     </div>
   );
 }

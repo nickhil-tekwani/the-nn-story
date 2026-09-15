@@ -85,7 +85,6 @@ Other initial measures:
 - Out-of-town attending groups and individuals
 - RSVP activity count
 - Distinct groups with RSVP activity
-- Median time from first claim to first guest RSVP, when both events exist
 
 Counts must state their grain (`groups`, `individuals`, `accounts`, or
 `events`) in labels to prevent ambiguity.
@@ -120,7 +119,6 @@ Initial supported dimensions:
 - RSVP activity date
 - RSVP activity source: guest or admin
 - RSVP activity type: first response or subsequent update, when derivable
-- Days from first claim to first guest RSVP
 
 Do not expose email, phone, allergy text, dietary selections, or hotel status as
 general BI dimensions. Hometown is also excluded from the initial builder;
@@ -168,7 +166,7 @@ The landing view should avoid overwhelming the user:
    - declining individuals;
    - awaiting individuals;
    - group response rate.
-2. A report selector with the seven canned reports below.
+2. A report selector with the canned reports below.
 3. A single `Build a report` action that reveals the query builder.
 4. One visualization followed by its underlying table.
 
@@ -245,12 +243,6 @@ Only these reports ship initially:
    - claimed groups with no RSVP;
    - sortable by invitation size, group label, and age;
    - drill-down to names.
-
-7. **Response latency**
-   - median and distribution of time from first claim to first guest RSVP;
-   - group-label filter;
-   - clearly exclude groups without both timestamps from the latency
-     calculation and report the excluded count.
 
 Explicitly excluded canned reports: RSVP status by group label, hotel/travel
 planning, dietary planning, and RSVP revision auditing. The underlying builder
@@ -456,7 +448,7 @@ RSVP results should remain fresh after an admin or guest update.
 - Admins can build a report from allowlisted datasets, measures, dimensions, and
   filters without writing SQL.
 - Results always have a table; compatible charts can be selected.
-- The seven canned reports produce documented metrics and useful empty states.
+- The canned reports produce documented metrics and useful empty states.
 - RSVP activity defaults to guest-only, can include admin changes, and visually
   separates the two sources.
 - Clicking an activity date reveals the relevant groups without exposing email

@@ -3,10 +3,10 @@
 import { signIn, signOut } from "next-auth/react";
 import { track } from "@/lib/umami";
 
-export function SignInButton() {
+export function SignInButton({ callbackUrl }: { callbackUrl?: string } = {}) {
   return (
     <button
-      onClick={() => { track("sign_in_clicked"); signIn("google"); }}
+      onClick={() => { track("sign_in_clicked"); signIn("google", callbackUrl ? { callbackUrl } : undefined); }}
       className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-3 font-sans text-sm font-medium text-stone-800 shadow-lg transition hover:bg-stone-100"
     >
       <GoogleMark />

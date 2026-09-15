@@ -82,7 +82,6 @@ export async function loadAnalyticsRows(dataset: AnalyticsDataset): Promise<Anal
       utilization_bucket: utilizationBucket(attendingIndividuals, group.maxPartySize),
       created_date: dateKey(group.createdAt),
       first_claim_date: dateKey(group.claimedAt ?? firstMember?.joinedAt),
-      first_claim_at: (group.claimedAt ?? firstMember?.joinedAt)?.toISOString() ?? null,
       latest_rsvp_date: dateKey(rsvp?.updatedAt),
       latest_rsvp_at: rsvp?.updatedAt.toISOString() ?? null,
       invited_groups: 1,
@@ -153,12 +152,6 @@ export async function loadAnalyticsRows(dataset: AnalyticsDataset): Promise<Anal
     const source = props.source === "admin" || event.event === "admin_rsvp_updated" ? "Admin" : "Guest";
     const isFirstGuestResponse = source === "Guest" && !seenGuestGroups.has(groupId);
     if (source === "Guest") seenGuestGroups.add(groupId);
-    const firstClaimValue = current?.first_claim_at;
-    const firstClaim = typeof firstClaimValue === "string" ? new Date(firstClaimValue) : null;
-    const responseHours = isFirstGuestResponse && firstClaim
-      ? Math.max(0, (event.createdAt.getTime() - firstClaim.getTime()) / 3_600_000)
-      : null;
-
     return {
       group_id: groupId,
       group_names: current?.group_names ?? "Deleted or unknown group",
@@ -171,7 +164,6 @@ export async function loadAnalyticsRows(dataset: AnalyticsDataset): Promise<Anal
       activity_source: source,
       activity_type: props.action === "first_response" || isFirstGuestResponse ? "First response" : "Update",
       activity_count: 1,
-      response_hours: responseHours,
     };
   });
 }

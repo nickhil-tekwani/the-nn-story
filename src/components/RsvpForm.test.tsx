@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+
+const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 import RsvpForm from "@/components/RsvpForm";
 
 afterEach(() => {
@@ -52,6 +56,7 @@ describe("RsvpForm submission method", () => {
       "/api/rsvp",
       expect.objectContaining({ method: "POST" }),
     );
+    expect(router.refresh).toHaveBeenCalledOnce();
   });
 
   it("uses PUT when the admin RSVP editor overrides the method", async () => {

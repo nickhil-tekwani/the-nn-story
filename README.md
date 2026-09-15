@@ -25,6 +25,19 @@ API routes = the backend).
 4. **Admins** (emails in `ADMIN_EMAILS`) get `/admin` to upload guests and see
    live RSVP status.
 
+## Stay planning
+
+`/stay` is a private, group-shared travel planner for guests who are attending,
+marked out of town, and belong to `Nick Friends`, `Nikki Friends`, or `Nick Fam`.
+It records hotel or friend/family lodging, independent inbound and outbound
+travel modes, and shows privacy-limited same-hotel coordination names. The
+protected `/admin/stay` workspace provides host oversight, editing, CSV export,
+and hotel catalog management.
+
+Apply `drizzle/0003_stay_planning.sql` before deploying this feature. As with
+all migrations, validate it on a disposable Neon branch first; never test it
+against the production `main` database.
+
 ## Local setup
 
 ### 1. Install

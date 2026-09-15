@@ -1,0 +1,39 @@
+.page { min-height: 100vh; background: #f4efe7; color: var(--ink-warm); font-family: var(--font-pt), Georgia, serif; padding: 1rem; }
+.shell { width: min(100%, 46rem); margin: 0 auto; }
+.nav { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0 1rem; font-size: .82rem; }
+.nav a { color: var(--ink-muted); text-decoration: none; }
+.hero { text-align: center; padding: 1rem 1rem 1.4rem; }
+.eyebrow { margin: 0 0 .65rem; color: var(--star); font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; }
+.hero h1 { margin: 0; font-family: var(--font-gilda), serif; font-size: clamp(2.2rem, 8vw, 3.2rem); font-weight: 400; }
+.intro { margin: .7rem auto 0; max-width: 34rem; color: var(--ink-muted); font-size: .9rem; line-height: 1.55; }
+.travelerPill { display: inline-block; margin-top: .8rem; padding: .3rem .75rem; border-radius: 999px; background: rgba(193,18,31,.07); color: var(--ink-mid); font-size: .75rem; }
+.stack { display: grid; gap: .75rem; }
+.card { overflow: hidden; border: 1px solid rgba(26,22,19,.11); border-radius: 1rem; background: var(--paper); box-shadow: 0 8px 28px rgba(35,28,20,.05); }
+.cardHeader { width: 100%; display: flex; align-items: center; gap: .85rem; border: 0; background: transparent; color: inherit; padding: 1rem 1.1rem; text-align: left; font: inherit; }
+.step { display: grid; place-items: center; flex: 0 0 1.85rem; height: 1.85rem; border-radius: 50%; background: #f1ece4; color: var(--star); font-size: .75rem; }
+.cardTitle { display: block; font-family: var(--font-gilda), serif; font-size: 1.12rem; }
+.summary { display: block; margin-top: .18rem; color: var(--ink-muted); font-size: .76rem; line-height: 1.35; }
+.chevron { margin-left: auto; color: var(--ink-faint); }
+.form { display: grid; gap: .85rem; border-top: 1px solid rgba(26,22,19,.08); padding: 0 1.1rem 1.1rem; padding-top: 1rem; }
+.label { display: grid; gap: .35rem; color: var(--ink-mid); font-size: .78rem; }
+.input, .select { width: 100%; box-sizing: border-box; border: 1px solid rgba(26,22,19,.17); border-radius: .62rem; background: #fff; color: var(--ink-warm); padding: .66rem .72rem; font: inherit; font-size: .86rem; }
+.choiceRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; }
+.choice { border: 1px solid rgba(26,22,19,.14); border-radius: .65rem; background: #fff; color: var(--ink-muted); padding: .62rem .35rem; font: inherit; font-size: .76rem; }
+.choiceActive { border-color: rgba(193,18,31,.4); background: rgba(193,18,31,.055); color: var(--ink-warm); }
+.twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.hint { margin: -.25rem 0 0; color: var(--ink-faint); font-size: .72rem; line-height: 1.4; }
+.actions { display: flex; align-items: center; gap: .8rem; }
+.save { border: 0; border-radius: 999px; background: var(--ink-warm); color: var(--paper); padding: .68rem 1.15rem; font: inherit; font-size: .82rem; }
+.save:disabled { opacity: .45; }
+.saved { color: #287047; font-size: .75rem; }
+.error { margin: 0; color: #9b1c1c; font-size: .78rem; }
+.match { margin: .85rem 0 0; border: 1px solid rgba(40,112,71,.18); border-radius: .8rem; background: rgba(40,112,71,.055); padding: .85rem 1rem; color: #315c45; font-size: .82rem; line-height: 1.5; }
+.warning { margin: .85rem 0 0; border: 1px solid rgba(146,100,20,.2); border-radius: .8rem; background: rgba(146,100,20,.07); padding: .85rem 1rem; color: #76520f; font-size: .82rem; line-height: 1.5; }
+.recommendations { margin: 1.1rem 0 2.5rem; border-radius: 1rem; background: #211b17; color: #f8f3ec; padding: 1.25rem; }
+.recommendations h2 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1.35rem; font-weight: 400; }
+.recommendations p { margin: .35rem 0 .9rem; color: rgba(248,243,236,.65); font-size: .78rem; }
+.recommendationGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+.recommendation { border: 1px solid rgba(248,243,236,.13); border-radius: .7rem; padding: .7rem; }
+.recommendation strong { display: block; font-size: .78rem; font-weight: 500; }
+.recommendation span { display: block; margin-top: .2rem; color: rgba(248,243,236,.5); font-size: .68rem; }
+@media (max-width: 560px) { .page { padding: .65rem; } .choiceRow { grid-template-columns: 1fr; } .twoCol { grid-template-columns: 1fr; } .recommendationGrid { grid-template-columns: 1fr; } }
