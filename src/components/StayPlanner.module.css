@@ -32,9 +32,14 @@
 .warning { margin: .85rem 0 0; border: 1px solid rgba(146,100,20,.2); border-radius: .8rem; background: rgba(146,100,20,.07); padding: .85rem 1rem; color: #76520f; font-size: .82rem; line-height: 1.5; }
 .recommendations { margin: 1.1rem 0 2.5rem; border-radius: 1rem; background: #211b17; color: #f8f3ec; padding: 1.25rem; }
 .recommendations h2 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1.35rem; font-weight: 400; }
-.recommendations p { margin: .35rem 0 .9rem; color: rgba(248,243,236,.65); font-size: .78rem; }
+.recommendations h3 { margin: 1.15rem 0 .55rem; color: rgba(248,243,236,.7); font-size: .7rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+.recommendations h4 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1rem; font-weight: 400; }
+.recommendations a { color: #fff8ef; text-decoration-color: rgba(248,243,236,.35); text-underline-offset: .18em; }
+.recommendations p { margin: .4rem 0 0; color: rgba(248,243,236,.65); font-size: .74rem; line-height: 1.5; }
+.recommendationIntro { max-width: 38rem; }
 .recommendationGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
 .recommendation { border: 1px solid rgba(248,243,236,.13); border-radius: .7rem; padding: .7rem; }
-.recommendation strong { display: block; font-size: .78rem; font-weight: 500; }
-.recommendation span { display: block; margin-top: .2rem; color: rgba(248,243,236,.5); font-size: .68rem; }
+.barGrid { grid-template-columns: repeat(2, 1fr); }
+.festival { margin-top: 1rem; border-color: rgba(193,18,31,.5); background: rgba(193,18,31,.12); }
+.festival h3 { margin: 0; font-family: var(--font-gilda), serif; font-size: 1rem; font-weight: 400; letter-spacing: 0; text-transform: none; }
 @media (max-width: 560px) { .page { padding: .65rem; } .choiceRow { grid-template-columns: 1fr; } .twoCol { grid-template-columns: 1fr; } .recommendationGrid { grid-template-columns: 1fr; } }

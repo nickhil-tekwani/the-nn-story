@@ -23,7 +23,12 @@ describe("StayPlanner", () => {
     expect(screen.getByText(/Homewood Suites by Hilton Cincinnati-Downtown/)).toBeTruthy();
     expect(screen.getByText(/Maya P. and Arjun S./)).toBeTruthy();
     expect(screen.getByText(/are staying at your hotel too/)).toBeTruthy();
-    expect(screen.getByText(/3 recommendations coming soon/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Graeter's Ice Cream" }).getAttribute("href")).toBe("https://maps.app.goo.gl/L3v7c8SCf6BDyYNT6");
+    expect(screen.getByRole("link", { name: "Skyline Chili" }).getAttribute("href")).toBe("https://maps.app.goo.gl/NGFBsfXY5C8S9CF86");
+    expect(screen.getByRole("link", { name: "Mikey's Late Night Slice" }).getAttribute("href")).toBe("https://maps.app.goo.gl/QV1vW2kFKbmvLZy56");
+    expect(screen.getByRole("link", { name: "Revel OTR Urban Winery" }).getAttribute("href")).toBe("https://maps.app.goo.gl/Se3ApNdUsJJ6kABM6");
+    expect(screen.getByRole("link", { name: "Bar Saeso" }).getAttribute("href")).toBe("https://maps.app.goo.gl/AHCdAKqeyoByYCio6");
+    expect(screen.getByRole("link", { name: "Oktoberfest Zinzinnati" }).getAttribute("href")).toBe("https://oktoberfestzinzinnati.com/festival-information/");
   });
 
   it("opens the first unanswered section to keep the form progressive", () => {

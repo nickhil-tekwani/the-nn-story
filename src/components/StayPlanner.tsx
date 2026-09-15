@@ -128,4 +128,46 @@ function getChronologyWarning(legs: Leg[]) {
   return null;
 }
 
-function Recommendations() { return <section className={styles.recommendations}><h2>Places we recommend</h2><p>A short list for the time between events. Our favorites are coming soon.</p><div className={styles.recommendationGrid}><div className={styles.recommendation}><strong>Bars</strong><span>3 recommendations coming soon</span></div><div className={styles.recommendation}><strong>Restaurants</strong><span>2 recommendations coming soon</span></div><div className={styles.recommendation}><strong>Oktoberfest Zinzinnati</strong><span>Festival details coming soon</span></div></div></section>; }
+function RecommendationLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+}
+
+function Recommendations() {
+  return <section className={styles.recommendations}>
+    <h2>Places we recommend</h2>
+    <p className={styles.recommendationIntro}>A few Cincinnati classics Nickhil and Nikki love, plus favorite downtown spots for your free time.</p>
+
+    <h3>Cincy classic food spots</h3>
+    <div className={styles.recommendationGrid}>
+      <article className={styles.recommendation}>
+        <h4><RecommendationLink href="https://maps.app.goo.gl/L3v7c8SCf6BDyYNT6">Graeter&apos;s Ice Cream</RecommendationLink></h4>
+        <p>A Cincinnati must. Any location is a great choice.</p>
+      </article>
+      <article className={styles.recommendation}>
+        <h4><RecommendationLink href="https://maps.app.goo.gl/NGFBsfXY5C8S9CF86">Skyline Chili</RecommendationLink></h4>
+        <p>Visit any location near where you&apos;re staying. The new downtown flagship is on Fountain Square and even has a bar. Chicken chili and black beans are available for guests who don&apos;t eat beef.</p>
+      </article>
+      <article className={styles.recommendation}>
+        <h4><RecommendationLink href="https://maps.app.goo.gl/QV1vW2kFKbmvLZy56">Mikey&apos;s Late Night Slice</RecommendationLink></h4>
+        <p>Technically a Columbus spot, but our pick for the best thin pizza by the slice.</p>
+      </article>
+    </div>
+
+    <h3>Downtown bars</h3>
+    <div className={`${styles.recommendationGrid} ${styles.barGrid}`}>
+      <article className={styles.recommendation}>
+        <h4><RecommendationLink href="https://maps.app.goo.gl/Se3ApNdUsJJ6kABM6">Revel OTR Urban Winery</RecommendationLink></h4>
+        <p>Incredible in-house wine blends anytime and a popping dance bar later at night. Ask if Matt is working—if he is, tell him you&apos;re friends with Lulu&apos;s daughter Nikki and her fiancé Nick. He&apos;ll hook you up :)</p>
+      </article>
+      <article className={styles.recommendation}>
+        <h4><RecommendationLink href="https://maps.app.goo.gl/AHCdAKqeyoByYCio6">Bar Saeso</RecommendationLink></h4>
+        <p>An intimate, hip cocktail bar downtown.</p>
+      </article>
+    </div>
+
+    <article className={`${styles.recommendation} ${styles.festival}`}>
+      <h3><RecommendationLink href="https://oktoberfestzinzinnati.com/festival-information/">Oktoberfest Zinzinnati</RecommendationLink></h3>
+      <p>At Sawyer Point on the riverfront, this is known as the largest Oktoberfest celebration outside Germany—and no ticket is needed to attend. We heavily recommend going for beers on Saturday afternoon after the engagement ceremony, especially if you&apos;re staying downtown.</p>
+    </article>
+  </section>;
+}
