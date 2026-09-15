@@ -42,4 +42,10 @@ describe("StayPlanner", () => {
     }} firstName={null} />);
     expect(screen.getByText(/departure is before your arrival/i)).toBeTruthy();
   });
+
+  it("lets admins inspect the guest page without enabling writes", () => {
+    render(<StayPlanner initialData={{ ...completePlan, lodging: null, legs: [] }} firstName={null} previewMode />);
+    expect(screen.getByText(/Admin preview · Example guest data/i)).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Preview only" }) as HTMLButtonElement).disabled).toBe(true);
+  });
 });

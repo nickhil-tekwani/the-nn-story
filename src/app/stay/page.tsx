@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { SignInButton } from "@/components/AuthButtons";
 import StayPlanner from "@/components/StayPlanner";
-import { getStayData, getStayEligibility } from "@/lib/stay";
+import { getAdminStayPreviewData, getStayData, getStayEligibility } from "@/lib/stay";
 
 export const metadata: Metadata = {
   title: "Your Cincinnati Stay · Nickhil ♥ Nikki",
@@ -25,6 +25,10 @@ export default async function StayPage() {
     );
   }
   const eligibility = await getStayEligibility(session.user.email);
+  if (!eligibility && session.user.isAdmin) {
+    const previewData = JSON.parse(JSON.stringify(await getAdminStayPreviewData()));
+    return <StayPlanner initialData={previewData} firstName={null} backHref="/admin/stay" heading="Guest Stay Page Preview" previewMode />;
+  }
   if (!eligibility) redirect("/engagement?stay=unavailable");
   const data = JSON.parse(JSON.stringify(await getStayData(eligibility)));
   return <StayPlanner initialData={data} firstName={session.user.name?.split(" ")[0] ?? null} />;

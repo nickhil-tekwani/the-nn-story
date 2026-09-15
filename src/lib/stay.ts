@@ -268,6 +268,23 @@ export async function getStayData(eligibility: StayEligibility) {
   };
 }
 
+export async function getAdminStayPreviewData() {
+  const hotelOptions = await db
+    .select({ id: hotels.id, canonicalName: hotels.canonicalName, locality: hotels.locality, region: hotels.region })
+    .from(hotels)
+    .where(eq(hotels.isArchived, false))
+    .orderBy(asc(hotels.canonicalName));
+
+  return {
+    partySize: 1,
+    partyMembers: ["Example guest"],
+    lodging: null,
+    legs: [],
+    hotels: hotelOptions,
+    hotelMatches: [],
+  };
+}
+
 export async function createHotel(groupId: number, body: unknown) {
   const data = body && typeof body === "object" ? body as Record<string, unknown> : {};
   const canonicalName = String(data.canonicalName ?? "").trim().replace(/\s+/g, " ");

@@ -7,6 +7,7 @@
 .hero h1 { margin: 0; font-family: var(--font-gilda), serif; font-size: clamp(2.2rem, 8vw, 3.2rem); font-weight: 400; }
 .intro { margin: .7rem auto 0; max-width: 34rem; color: var(--ink-muted); font-size: .9rem; line-height: 1.55; }
 .travelerPill { display: inline-block; margin-top: .8rem; padding: .3rem .75rem; border-radius: 999px; background: rgba(193,18,31,.07); color: var(--ink-mid); font-size: .75rem; }
+.adminPreview { width: fit-content; margin: .7rem auto 0; border: 1px solid rgba(146,100,20,.2); border-radius: 999px; background: rgba(146,100,20,.07); padding: .35rem .7rem; color: #76520f; font-size: .72rem; }
 .stack { display: grid; gap: .75rem; }
 .card { overflow: hidden; border: 1px solid rgba(26,22,19,.11); border-radius: 1rem; background: var(--paper); box-shadow: 0 8px 28px rgba(35,28,20,.05); }
 .cardHeader { width: 100%; display: flex; align-items: center; gap: .85rem; border: 0; background: transparent; color: inherit; padding: 1rem 1.1rem; text-align: left; font: inherit; }
